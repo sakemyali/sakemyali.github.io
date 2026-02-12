@@ -16,12 +16,12 @@ import {
 
 const INITIAL_ORDER = [
   "profile",
-  "social",
-  "techstack",
-  "projects",
   "time",
   "experience",
   "education",
+  "social",
+  "projects",
+  "techstack",
   "hackathons",
   "skillstools",
 ];
