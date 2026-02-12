@@ -68,6 +68,9 @@ export const tools = [
 ];
 
 export const hackathons = [
+  "{Tech: Europe} Paris AI Hackathon 2026 (OpenAI, Lovable...)",
+  "AMD Robotics Hackathon Paris 2025 (AMD, HugingFace...)",
+  "iCHack 26 (HRT, IMC, Citadel...)",
 ];
 
 export const education = [
