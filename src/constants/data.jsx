@@ -14,6 +14,7 @@ export const projects = [
   { id: 3, link: "https://github.com/sakemyali/push_swap" },
   { id: 4, link: "https://github.com/sakemyali/minitalk" },
   { id: 5, link: "https://github.com/sakemyali/AMD_Hackathon_Paris2025" },
+  { id: 6, link: "https://github.com/sakemyali/Tech-Europe_Hack2026" },
 ];
 
 export const socialLinks = [
