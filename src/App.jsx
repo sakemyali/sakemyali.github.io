@@ -511,12 +511,14 @@ function App() {
             animate={{ opacity: 1 }}
             transition={{ delay: 2 }}
             onClick={resetOrder}
-            className="fixed bottom-6 right-6 z-50 p-3 rounded-full bg-white/5 border border-white/10
+            className="group/tip fixed bottom-6 right-6 z-50 p-3 rounded-full bg-white/5 border border-white/10
              hover:bg-white/10 hover:border-white/20 transition-all duration-300
              text-neutral-500 hover:text-white backdrop-blur-sm"
-            title="Reset layout"
           >
             <RotateCcw size={18} />
+            <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-xs font-medium rounded-lg bg-black/80 text-white whitespace-nowrap opacity-0 scale-90 group-hover/tip:opacity-100 group-hover/tip:scale-100 transition-all duration-200 pointer-events-none">
+              Reset layout
+            </span>
           </motion.button>
 
           {/* Accent theme toggle */}
@@ -525,12 +527,14 @@ function App() {
             animate={{ opacity: 1 }}
             transition={{ delay: 2.2 }}
             onClick={cycleAccent}
-            className="fixed bottom-6 right-20 z-50 p-3 rounded-full bg-white/5 border border-white/10
+            className="group/tip fixed bottom-6 right-20 z-50 p-3 rounded-full bg-white/5 border border-white/10
              hover:bg-white/10 hover:border-white/20 transition-all duration-300
              backdrop-blur-sm flex items-center gap-0"
-            title={`Theme: ${accent.name}`}
           >
             <Palette size={18} style={{ color: accent.color }} />
+            <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-xs font-medium rounded-lg bg-black/80 text-white whitespace-nowrap opacity-0 scale-90 group-hover/tip:opacity-100 group-hover/tip:scale-100 transition-all duration-200 pointer-events-none">
+              Accent: {accent.name}
+            </span>
           </motion.button>
 
           {/* Light/Dark mode toggle */}
@@ -539,12 +543,14 @@ function App() {
             animate={{ opacity: 1 }}
             transition={{ delay: 2.4 }}
             onClick={toggleLightMode}
-            className="fixed bottom-6 right-34 z-50 p-3 rounded-full bg-white/5 border border-white/10
+            className="group/tip fixed bottom-6 right-34 z-50 p-3 rounded-full bg-white/5 border border-white/10
              hover:bg-white/10 hover:border-white/20 transition-all duration-300
              text-neutral-500 hover:text-white backdrop-blur-sm"
-            title={lightMode ? "Switch to dark mode" : "Switch to bright mode"}
           >
             {lightMode ? <Moon size={18} /> : <Sun size={18} />}
+            <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-xs font-medium rounded-lg bg-black/80 text-white whitespace-nowrap opacity-0 scale-90 group-hover/tip:opacity-100 group-hover/tip:scale-100 transition-all duration-200 pointer-events-none">
+              {lightMode ? "Dark mode" : "Bright mode"}
+            </span>
           </motion.button>
 
           {displayOrder.map((id, i) => {
