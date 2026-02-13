@@ -24,10 +24,10 @@ const INITIAL_ORDER = [
   "time",
   "experience",
   "education",
-  "social",
-  "languages",
-  "projects",
   "techstack",
+  "languages",
+  "social",
+  "projects",
   "githubstats",
   "hackathons",
   "learning",
@@ -329,7 +329,7 @@ function App() {
             <BriefcaseBusiness size={20} className="text-neutral-400" />
             <span>Experience</span>
           </h2>
-          <ul className="space-y-3 px-3 text-sm overflow-y-auto overflow-x-hidden">
+          <ul className="space-y-3 px-3 text-sm overflow-y-auto overflow-x-hidden" style={{ maxHeight: "360px" }}>
             {experiences.map((job, i) => (
               <li key={i} className="soft-card group">
                 <span className="text-white font-medium flex items-center gap-2">{job.title} - {job.company}</span>
@@ -369,7 +369,7 @@ function App() {
             <span>Hackathons</span>
           </h2>
           {hackathons.length > 0 ? (
-            <ul className="space-y-3 px-3 text-sm overflow-y-auto overflow-x-hidden">
+            <ul className="space-y-3 px-3 text-sm overflow-y-auto overflow-x-hidden" style={{ maxHeight: "200px" }}>
               {hackathons.map((hack, i) => (
                 <li key={i} className="soft-card group">
                   <span className="text-white font-medium flex items-center gap-2">
