@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { Clock, Trophy, User, BriefcaseBusiness, Code, GripVertical, RotateCcw, FileText, Swords, GraduationCap, Languages, GitBranch, Sparkles, Palette } from "lucide-react";
+import { Clock, Trophy, User, BriefcaseBusiness, Code, GripVertical, RotateCcw, FileText, Swords, GraduationCap, Languages, GitBranch, Sparkles, Palette, Sun, Moon } from "lucide-react";
 
 import {
   personalInfo,
@@ -54,11 +54,23 @@ function App() {
   const [accentIndex, setAccentIndex] = useState(0);
   const accent = accentThemes[accentIndex];
 
+  // Light/dark mode state
+  const [lightMode, setLightMode] = useState(false);
+
   // Apply accent color as CSS custom property
   useEffect(() => {
     document.documentElement.style.setProperty("--accent", accent.color);
     document.documentElement.style.setProperty("--accent-rgb", accent.rgb);
   }, [accent]);
+
+  // Apply light/dark mode class
+  useEffect(() => {
+    document.documentElement.classList.toggle("light", lightMode);
+  }, [lightMode]);
+
+  const toggleLightMode = useCallback(() => {
+    setLightMode((prev) => !prev);
+  }, []);
 
   const cycleAccent = useCallback(() => {
     setAccentIndex((prev) => (prev + 1) % accentThemes.length);
@@ -430,13 +442,16 @@ function App() {
             <span>GitHub Activity</span>
           </h2>
           <img
-            src={`https://ghchart.rshah.org/6b7280/${githubUsername}`}
+            src={`https://ghchart.rshah.org/${githubUsername}`}
             alt="GitHub contribution chart"
             className="w-full rounded-lg opacity-80 hover:opacity-100 transition-opacity duration-300"
           />
           <div className="flex gap-3 w-full">
             <img
-              src={`https://github-readme-streak-stats.herokuapp.com?user=${githubUsername}&theme=transparent&hide_border=true&date_format=j%20M%5B%20Y%5D&ring=6b7280&fire=ffffff&currStreakLabel=ffffff&sideLabels=9ca3af&currStreakNum=ffffff&sideNums=d4d4d4&dates=525252`}
+              src={lightMode
+                ? `https://github-readme-streak-stats.herokuapp.com?user=${githubUsername}&theme=default&hide_border=true&date_format=j%20M%5B%20Y%5D&ring=2563eb&fire=1a1a1a&currStreakLabel=1a1a1a&sideLabels=4b5563&currStreakNum=1a1a1a&sideNums=374151&dates=6b7280&background=00000000`
+                : `https://github-readme-streak-stats.herokuapp.com?user=${githubUsername}&theme=transparent&hide_border=true&date_format=j%20M%5B%20Y%5D&ring=6b7280&fire=ffffff&currStreakLabel=ffffff&sideLabels=9ca3af&currStreakNum=ffffff&sideNums=d4d4d4&dates=525252`
+              }
               alt="GitHub streak"
               className="w-full rounded-lg"
             />
@@ -516,6 +531,20 @@ function App() {
             title={`Theme: ${accent.name}`}
           >
             <Palette size={18} style={{ color: accent.color }} />
+          </motion.button>
+
+          {/* Light/Dark mode toggle */}
+          <motion.button
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 2.4 }}
+            onClick={toggleLightMode}
+            className="fixed bottom-6 right-34 z-50 p-3 rounded-full bg-white/5 border border-white/10
+             hover:bg-white/10 hover:border-white/20 transition-all duration-300
+             text-neutral-500 hover:text-white backdrop-blur-sm"
+            title={lightMode ? "Switch to dark mode" : "Switch to bright mode"}
+          >
+            {lightMode ? <Moon size={18} /> : <Sun size={18} />}
           </motion.button>
 
           {displayOrder.map((id, i) => {
