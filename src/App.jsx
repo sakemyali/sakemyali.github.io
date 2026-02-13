@@ -1,6 +1,7 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Clock, Trophy, User, BriefcaseBusiness, Code, GripVertical, RotateCcw, FileText, Swords, GraduationCap, Languages, GitBranch, Sparkles } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Clock, Trophy, User, BriefcaseBusiness, Code, GripVertical, RotateCcw, FileText, Swords, GraduationCap, Languages, GitBranch, Sparkles, Palette } from "lucide-react";
 
 import {
   personalInfo,
@@ -14,6 +15,7 @@ import {
   languages,
   currentlyLearning,
   githubUsername,
+  accentThemes,
 } from "./constants/data.jsx";
 
 
@@ -41,6 +43,55 @@ function App() {
   const cardElsRef = useRef({});
   const draggedRef = useRef(null);
   const hoverRef = useRef(null);
+
+  // Typing animation state
+  const [displayText, setDisplayText] = useState("");
+  const [roleIndex, setRoleIndex] = useState(0);
+  const [charIndex, setCharIndex] = useState(0);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // Accent theme state
+  const [accentIndex, setAccentIndex] = useState(0);
+  const accent = accentThemes[accentIndex];
+
+  // Apply accent color as CSS custom property
+  useEffect(() => {
+    document.documentElement.style.setProperty("--accent", accent.color);
+    document.documentElement.style.setProperty("--accent-rgb", accent.rgb);
+  }, [accent]);
+
+  const cycleAccent = useCallback(() => {
+    setAccentIndex((prev) => (prev + 1) % accentThemes.length);
+  }, []);
+
+  // Typing effect
+  useEffect(() => {
+    const roles = personalInfo.roles;
+    const current = roles[roleIndex];
+    const speed = isDeleting ? 40 : 80;
+    const pauseEnd = 1800;
+    const pauseDelete = 500;
+
+    const timeout = setTimeout(() => {
+      if (!isDeleting) {
+        setDisplayText(current.slice(0, charIndex + 1));
+        setCharIndex((c) => c + 1);
+        if (charIndex + 1 === current.length) {
+          setTimeout(() => setIsDeleting(true), pauseEnd);
+        }
+      } else {
+        setDisplayText(current.slice(0, charIndex - 1));
+        setCharIndex((c) => c - 1);
+        if (charIndex - 1 === 0) {
+          setIsDeleting(false);
+          setRoleIndex((r) => (r + 1) % roles.length);
+          setTimeout(() => {}, pauseDelete);
+        }
+      }
+    }, speed);
+
+    return () => clearTimeout(timeout);
+  }, [charIndex, isDeleting, roleIndex]);
 
   useEffect(() => {
     setMounted(true);
@@ -152,6 +203,10 @@ function App() {
             <User size={22} className="text-neutral-400" />
             <p className="text-slate-300 text-sm leading-relaxed">{personalInfo.name}</p>
           </h2>
+          <p className="text-lg font-semibold h-7" style={{ color: accent.color }}>
+            {displayText}
+            <span className="animate-pulse">|</span>
+          </p>
           <p className="text-sm text-slate-500 leading-relaxed">{personalInfo.bio}</p>
           <a
             href="/cv.pdf"
@@ -203,12 +258,13 @@ function App() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
             {projects.map((project) => (
               <motion.div key={project.id} className="relative group rounded-xl overflow-hidden w-full aspect-video cursor-pointer">
-                <a href={project.link} target="_blank" rel="noopener noreferrer" className="block w-full h-full">
-                  <video src={`projectvid${project.id}.mp4`} muted loop autoPlay playsInline className="w-full h-full object-cover transition-all duration-500"></video>
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                    <span className="text-white text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300">View on GitHub</span>
+                <Link to={`/project/${project.slug}`} className="block w-full h-full">
+                  <video src={`/projectvid${project.id}.mp4`} muted loop autoPlay playsInline className="w-full h-full object-cover transition-all duration-500"></video>
+                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center gap-1">
+                    <span className="text-white text-sm font-medium">{project.name}</span>
+                    <span className="text-neutral-400 text-xs">{project.tagline}</span>
                   </div>
-                </a>
+                </Link>
               </motion.div>
             ))}
           </div>
@@ -446,6 +502,20 @@ function App() {
             title="Reset layout"
           >
             <RotateCcw size={18} />
+          </motion.button>
+
+          {/* Accent theme toggle */}
+          <motion.button
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 2.2 }}
+            onClick={cycleAccent}
+            className="fixed bottom-6 right-20 z-50 p-3 rounded-full bg-white/5 border border-white/10
+             hover:bg-white/10 hover:border-white/20 transition-all duration-300
+             backdrop-blur-sm flex items-center gap-0"
+            title={`Theme: ${accent.name}`}
+          >
+            <Palette size={18} style={{ color: accent.color }} />
           </motion.button>
 
           {displayOrder.map((id, i) => {

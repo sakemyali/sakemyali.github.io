@@ -6,15 +6,73 @@ export const personalInfo = {
   bio: "Backend engineer and Cybersecurity graduate based in Tokyo, Japan. I build secure, scalable systems with C, Python, and cloud technologies.",
   email: "myali.sakurai.elidrissi@gmail.com",
   location: "Japan",
+  roles: [
+    "Cybersecurity Graduate",
+    "42 Tokyo Student",
+  ],
 };
 
 export const projects = [
-  { id: 1, link: "https://github.com/sakemyali/fract-ol" },
-  { id: 2, link: "https://github.com/sakemyali/ichack26" },
-  { id: 3, link: "https://github.com/sakemyali/push_swap" },
-  { id: 4, link: "https://github.com/sakemyali/minitalk" },
-  { id: 5, link: "https://github.com/sakemyali/AMD_Hackathon_Paris2025" },
-  { id: 6, link: "https://github.com/sakemyali/Tech-Europe_Hack2026" },
+  {
+    id: 1,
+    slug: "fract-ol",
+    name: "Fract-ol",
+    link: "https://github.com/sakemyali/fract-ol",
+    tagline: "GPU-accelerated fractal explorer",
+    description: "An interactive fractal rendering engine built in C using the MiniLibX graphics library. Renders Mandelbrot, Julia, and Burning Ship fractals with real-time zoom, color shifting, and smooth iteration coloring.",
+    tech: ["C", "MiniLibX", "Mathematics"],
+    highlights: ["Real-time zoom with mouse scroll", "Multiple fractal sets", "Psychedelic color palette cycling"],
+  },
+  {
+    id: 2,
+    slug: "ichack26",
+    name: "iCHack 26",
+    link: "https://github.com/sakemyali/ichack26",
+    tagline: "Imperial College hackathon project",
+    description: "Built during iCHack 26 at Imperial College London, sponsored by HRT, IMC, and Citadel. A collaborative project developed under a 24-hour time constraint.",
+    tech: ["Python", "APIs", "Team Collaboration"],
+    highlights: ["24-hour build sprint", "Presented to industry sponsors", "Cross-functional team"],
+  },
+  {
+    id: 3,
+    slug: "push-swap",
+    name: "Push Swap",
+    link: "https://github.com/sakemyali/push_swap",
+    tagline: "Optimized sorting with minimal operations",
+    description: "A sorting algorithm project from 42 Tokyo that sorts a stack of integers using a limited set of operations (sa, sb, ra, rb, pa, pb, etc.) in the fewest moves possible.",
+    tech: ["C", "Algorithms", "Data Structures"],
+    highlights: ["Turk algorithm implementation", "Optimized for minimal operations", "Handles edge cases"],
+  },
+  {
+    id: 4,
+    slug: "minitalk",
+    name: "Minitalk",
+    link: "https://github.com/sakemyali/minitalk",
+    tagline: "UNIX signal-based IPC",
+    description: "A client-server communication program using UNIX signals (SIGUSR1 and SIGUSR2). Transmits strings between processes bit by bit with acknowledgment signals.",
+    tech: ["C", "UNIX Signals", "IPC"],
+    highlights: ["Bit-level data transmission", "Signal acknowledgment protocol", "Unicode support"],
+  },
+  {
+    id: 5,
+    slug: "amd-hackathon",
+    name: "AMD Robotics Hackathon",
+    link: "https://github.com/sakemyali/AMD_Hackathon_Paris2025",
+    tagline: "Robotics + AI at AMD Paris 2025",
+    description: "Developed at the AMD Robotics Hackathon in Paris, sponsored by AMD and HuggingFace. Focused on integrating AI capabilities with robotics hardware.",
+    tech: ["Python", "HuggingFace", "Robotics"],
+    highlights: ["AMD hardware integration", "AI model deployment", "Real-time processing"],
+  },
+  {
+    id: 6,
+    slug: "tech-europe-hack",
+    name: "Tech Europe Hack 2026",
+    link: "https://github.com/sakemyali/Tech-Europe_Hack2026",
+    tagline: "AI hackathon with OpenAI & Lovable",
+    description: "Built at the {Tech: Europe} Paris AI Hackathon 2026, sponsored by OpenAI and Lovable. A cutting-edge AI project developed in a competitive international environment.",
+    tech: ["Python", "OpenAI API", "Cloud"],
+    highlights: ["OpenAI API integration", "Rapid prototyping", "International competition"],
+  },
 ];
 
 export const socialLinks = [
@@ -198,3 +256,11 @@ export const currentlyLearning = [
 ];
 
 export const githubUsername = "sakemyali";
+
+export const accentThemes = [
+  { name: "Mono", color: "#ffffff", rgb: "255, 255, 255" },
+  { name: "Blue", color: "#60a5fa", rgb: "96, 165, 250" },
+  { name: "Green", color: "#4ade80", rgb: "74, 222, 128" },
+  { name: "Amber", color: "#fbbf24", rgb: "251, 191, 36" },
+  { name: "Rose", color: "#fb7185", rgb: "251, 113, 133" },
+];
