@@ -1,4 +1,4 @@
-import { Github, Linkedin, Mail } from "lucide-react";
+import { Github, Linkedin, Mail, Bot } from "lucide-react";
 
 export const personalInfo = {
   name: "Moulay Ali Sakurai El idrissi",
@@ -28,6 +28,12 @@ export const socialLinks = [
     name: "LinkedIn",
     icon: Linkedin,
     link: "https://www.linkedin.com/in/emyali/",
+    color: "hover:text-white",
+  },
+  {
+    name: "Hugging Face",
+    icon: Bot,
+    link: "https://huggingface.co/sakemyali",
     color: "hover:text-white",
   },
   {
@@ -68,9 +74,21 @@ export const tools = [
 ];
 
 export const hackathons = [
-  "{Tech: Europe} Paris AI Hackathon 2026 (OpenAI, Lovable...)",
-  "AMD Robotics Hackathon Paris 2025 (AMD, HugingFace...)",
-  "iCHack 26 (HRT, IMC, Citadel...)",
+  {
+    name: "{Tech: Europe} Paris AI Hackathon 2026",
+    date: "2026",
+    desc: "Sponsors: OpenAI, Lovable...",
+  },
+  {
+    name: "AMD Robotics Hackathon Paris 2025",
+    date: "2025",
+    desc: "Sponsors: AMD, HuggingFace...",
+  },
+  {
+    name: "iCHack 26",
+    date: "2026",
+    desc: "Sponsors: HRT, IMC, Citadel...",
+  },
 ];
 
 export const education = [
