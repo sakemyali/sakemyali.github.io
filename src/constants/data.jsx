@@ -181,3 +181,20 @@ export const certificates = [
   "Outstanding Performance Prize – CS Dept, NTU",
   "1st Place – 42 Tokyo Piscine Entrance Exam",
 ];
+
+export const languages = [
+  { name: "English", level: "Full Professional" },
+  { name: "French", level: "Advanced" },
+  { name: "Arabic", level: "Intermediate" },
+  { name: "Darija", level: "Native / Bilingual" },
+  { name: "Japanese", level: "Advanced" },
+];
+
+export const currentlyLearning = [
+  "C – Systems programming & memory safety",
+  "Kubernetes – Container orchestration at scale",
+  "Advanced RAG – Agentic retrieval & evaluation",
+  "Quantum Computing – Post-quantum cryptography",
+];
+
+export const githubUsername = "sakemyali";

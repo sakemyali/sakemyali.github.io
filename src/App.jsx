@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
-import { Clock, Trophy, User, BriefcaseBusiness, Code, GripVertical, RotateCcw, FileText, Swords, GraduationCap } from "lucide-react";
+import { Clock, Trophy, User, BriefcaseBusiness, Code, GripVertical, RotateCcw, FileText, Swords, GraduationCap, Languages, GitBranch, Sparkles } from "lucide-react";
 
 import {
   personalInfo,
@@ -11,6 +11,9 @@ import {
   hackathons,
   education,
   techStack,
+  languages,
+  currentlyLearning,
+  githubUsername,
 } from "./constants/data.jsx";
 
 
@@ -20,9 +23,12 @@ const INITIAL_ORDER = [
   "experience",
   "education",
   "social",
+  "languages",
   "projects",
   "techstack",
+  "githubstats",
   "hackathons",
+  "learning",
   "skillstools",
 ];
 
@@ -331,6 +337,75 @@ function App() {
                 <span className="text-slate-500 mt-1">{edu.period}</span>
                 <p className="mt-2 text-slate-400 leading-relaxed">{edu.desc}</p>
               </li>
+            ))}
+          </ul>
+        </>
+      ),
+    },
+    languages: {
+      className: "card card-default flex flex-col justify-center gap-3",
+      content: (
+        <>
+          <h2 className="section-title">
+            <Languages size={20} className="text-neutral-400" />
+            <span>Languages</span>
+          </h2>
+          <div className="grid grid-cols-2 gap-3">
+            {languages.map((lang, i) => (
+              <motion.div
+                key={i}
+                whileHover={{ scale: 1.03 }}
+                className="stats-box flex flex-col items-center text-center gap-1"
+              >
+                <span className="text-white font-medium text-sm">{lang.name}</span>
+                <span className="text-xs text-slate-500">{lang.level}</span>
+              </motion.div>
+            ))}
+          </div>
+        </>
+      ),
+    },
+    githubstats: {
+      className: "card card-default flex flex-col gap-4 items-center",
+      content: (
+        <>
+          <h2 className="section-title w-full">
+            <GitBranch size={20} className="text-neutral-400" />
+            <span>GitHub Activity</span>
+          </h2>
+          <img
+            src={`https://ghchart.rshah.org/6b7280/${githubUsername}`}
+            alt="GitHub contribution chart"
+            className="w-full rounded-lg opacity-80 hover:opacity-100 transition-opacity duration-300"
+          />
+          <div className="flex gap-3 w-full">
+            <img
+              src={`https://github-readme-streak-stats.herokuapp.com?user=${githubUsername}&theme=transparent&hide_border=true&date_format=j%20M%5B%20Y%5D&ring=6b7280&fire=ffffff&currStreakLabel=ffffff&sideLabels=9ca3af&currStreakNum=ffffff&sideNums=d4d4d4&dates=525252`}
+              alt="GitHub streak"
+              className="w-full rounded-lg"
+            />
+          </div>
+        </>
+      ),
+    },
+    learning: {
+      className: "card card-default flex flex-col justify-center gap-3",
+      content: (
+        <>
+          <h2 className="section-title">
+            <Sparkles size={20} className="text-neutral-400" />
+            <span>Currently Exploring</span>
+          </h2>
+          <ul className="space-y-2 text-sm">
+            {currentlyLearning.map((item, i) => (
+              <motion.li
+                key={i}
+                whileHover={{ x: 4 }}
+                className="flex items-center gap-2 group text-slate-400 hover:text-white transition-colors duration-300"
+              >
+                <span className="bullet bg-white/30 group-hover:bg-white"></span>
+                {item}
+              </motion.li>
             ))}
           </ul>
         </>
