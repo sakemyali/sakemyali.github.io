@@ -19,7 +19,12 @@ function ProjectPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white font-mono">
+    <div className="min-h-screen bg-[#0a0a0a] text-white font-mono dot-grid grain-overlay">
+      {/* Radial vignette */}
+      <div className="fixed inset-0 pointer-events-none" style={{
+        background: "radial-gradient(ellipse at center, transparent 0%, #0a0a0a 70%)",
+      }} />
+
       {/* Hero video */}
       <div className="relative w-full h-[40vh] md:h-[50vh] overflow-hidden">
         <video
@@ -35,7 +40,7 @@ function ProjectPage() {
         {/* Back button */}
         <Link
           to="/"
-          className="absolute top-6 left-6 z-10 flex items-center gap-2 text-sm text-neutral-400 hover:text-white transition-colors duration-300 backdrop-blur-sm bg-black/30 px-3 py-2 rounded-lg"
+          className="absolute top-6 left-6 z-10 flex items-center gap-2 text-sm text-neutral-400 hover:text-white transition-colors duration-300 backdrop-blur-sm bg-black/30 px-3 py-2 rounded-lg border border-white/10"
         >
           <ArrowLeft size={16} />
           Back
@@ -44,9 +49,9 @@ function ProjectPage() {
 
       {/* Content */}
       <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        initial={{ opacity: 0, y: 30, filter: "blur(8px)" }}
+        animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
         className="max-w-3xl mx-auto px-6 -mt-20 relative z-10 pb-20"
       >
         {/* Title & tagline */}
@@ -56,12 +61,15 @@ function ProjectPage() {
         {/* Tech tags */}
         <div className="flex flex-wrap gap-2 mb-8">
           {project.tech.map((t, i) => (
-            <span
+            <motion.span
               key={i}
-              className="px-3 py-1 rounded-full text-xs font-medium bg-white/5 border border-white/10 text-neutral-300"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.3 + i * 0.08 }}
+              className="px-3 py-1 rounded-full text-xs font-medium bg-white/5 border border-white/10 text-neutral-300 hover:bg-white/10 hover:border-white/20 transition-all duration-300"
             >
               {t}
-            </span>
+            </motion.span>
           ))}
         </div>
 
@@ -79,9 +87,9 @@ function ProjectPage() {
               {project.highlights.map((h, i) => (
                 <motion.li
                   key={i}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.3 + i * 0.1 }}
+                  initial={{ opacity: 0, x: -10, filter: "blur(4px)" }}
+                  animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+                  transition={{ delay: 0.4 + i * 0.1 }}
                   className="flex items-center gap-3 text-neutral-400"
                 >
                   <span className="w-1.5 h-1.5 rounded-full bg-white/40 flex-shrink-0" />
@@ -93,15 +101,17 @@ function ProjectPage() {
         )}
 
         {/* GitHub link */}
-        <a
+        <motion.a
           href={project.link}
           target="_blank"
           rel="noopener noreferrer"
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
           className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-300 text-sm font-medium"
         >
           <ExternalLink size={16} />
           View on GitHub
-        </a>
+        </motion.a>
       </motion.div>
     </div>
   );

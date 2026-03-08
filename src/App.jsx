@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, useCallback } from "react";
-import { motion } from "framer-motion";
+import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Clock, Trophy, User, BriefcaseBusiness, Code, GripVertical, RotateCcw, FileText, Swords, GraduationCap, Languages, GitBranch, Sparkles, Palette, Sun, Moon } from "lucide-react";
 
@@ -18,6 +18,32 @@ import {
   accentThemes,
 } from "./constants/data.jsx";
 
+
+function DockItem({ mouseX, children, onClick, label }) {
+  const ref = useRef(null);
+
+  const distance = useTransform(mouseX, (val) => {
+    const bounds = ref.current?.getBoundingClientRect() ?? { x: 0, width: 0 };
+    return val - (bounds.x + bounds.width / 2);
+  });
+
+  const widthSync = useTransform(distance, [-120, 0, 120], [40, 56, 40]);
+  const width = useSpring(widthSync, { mass: 0.1, stiffness: 200, damping: 14 });
+
+  return (
+    <motion.button
+      ref={ref}
+      style={{ width, height: width }}
+      onClick={onClick}
+      className="dock-item group/dock"
+    >
+      {children}
+      <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 text-[11px] font-medium rounded-md bg-black/80 text-white whitespace-nowrap opacity-0 scale-90 group-hover/dock:opacity-100 group-hover/dock:scale-100 transition-all duration-150 pointer-events-none">
+        {label}
+      </span>
+    </motion.button>
+  );
+}
 
 const INITIAL_ORDER = [
   "profile",
@@ -187,16 +213,18 @@ function App() {
     hidden: { opacity: 0 },
     show: {
       opacity: 1,
-      transition: { staggerChildren: 0.2, duration: 0.7 },
+      transition: { staggerChildren: 0.12, duration: 0.5 },
     },
   };
 
   const itemVariants = {
-    hidden: { opacity: 0, y: 30 },
+    hidden: { opacity: 0, y: 24, scale: 0.97, filter: "blur(6px)" },
     show: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] },
+      scale: 1,
+      filter: "blur(0px)",
+      transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] },
     },
   };
 
@@ -206,6 +234,14 @@ function App() {
     setHoverIndex(null);
   };
 
+  // Cursor spotlight handler for cards
+  const handleCardMouseMove = useCallback((e) => {
+    const card = e.currentTarget;
+    const rect = card.getBoundingClientRect();
+    card.style.setProperty("--mouse-x", `${e.clientX - rect.left}px`);
+    card.style.setProperty("--mouse-y", `${e.clientY - rect.top}px`);
+  }, []);
+
   const cardContent = {
     profile: {
       className: "card card-default flex flex-col justify-center gap-3",
@@ -213,18 +249,19 @@ function App() {
         <>
           <h2 className="section-title">
             <User size={22} className="text-neutral-400" />
-            <p className="text-slate-300 text-sm leading-relaxed">{personalInfo.name}</p>
+            <p className="text-slate-300 text-sm leading-relaxed animate-blur-in" style={{ animationDelay: "0.2s" }}>{personalInfo.name}</p>
           </h2>
-          <p className="text-lg font-semibold h-7" style={{ color: accent.color }}>
+          <p className="text-lg font-semibold h-7 animate-blur-in" style={{ color: accent.color, animationDelay: "0.4s" }}>
             {displayText}
             <span className="animate-pulse">|</span>
           </p>
-          <p className="text-sm text-slate-500 leading-relaxed">{personalInfo.bio}</p>
+          <p className="text-sm text-slate-500 leading-relaxed animate-blur-in" style={{ animationDelay: "0.6s" }}>{personalInfo.bio}</p>
           <a
             href="/cv.pdf"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 text-sm text-neutral-400 hover:text-white transition-colors duration-300 w-fit"
+            className="inline-flex items-center gap-2 text-sm text-neutral-400 hover:text-white transition-colors duration-300 w-fit animate-blur-in"
+            style={{ animationDelay: "0.8s" }}
           >
             <FileText size={16} />
             <span>View CV</span>
@@ -496,63 +533,24 @@ function App() {
 
   const displayOrder = getDisplayOrder();
 
+  // Dock magnification
+  const mouseX = useMotionValue(Infinity);
+
   return (
     <>
-      <div className="relative min-h-screen flex justify-center items-center bg-[#0a0a0a] text-white p-4 md:py-14 font-mono overflow-hidden">
+      <div className="grain-overlay" />
+      <div className="relative min-h-screen flex justify-center items-center bg-[#0a0a0a] text-white p-4 md:py-14 font-mono overflow-hidden dot-grid">
+        {/* Radial vignette */}
+        <div className="fixed inset-0 pointer-events-none" style={{
+          background: "radial-gradient(ellipse at center, transparent 0%, #0a0a0a 70%)",
+        }} />
+
         <motion.main
           variants={containerVariants}
           initial="hidden"
           animate={mounted ? "show" : "hidden"}
           className="main-grid relative"
         >
-          {/* Reset button */}
-          <motion.button
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 2 }}
-            onClick={resetOrder}
-            className="group/tip fixed bottom-6 right-6 z-50 p-3 rounded-full bg-white/5 border border-white/10
-             hover:bg-white/10 hover:border-white/20 transition-all duration-300
-             text-neutral-500 hover:text-white backdrop-blur-sm"
-          >
-            <RotateCcw size={18} />
-            <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-xs font-medium rounded-lg bg-black/80 text-white whitespace-nowrap opacity-0 scale-90 group-hover/tip:opacity-100 group-hover/tip:scale-100 transition-all duration-200 pointer-events-none">
-              Reset layout
-            </span>
-          </motion.button>
-
-          {/* Accent theme toggle */}
-          <motion.button
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 2.2 }}
-            onClick={cycleAccent}
-            className="group/tip fixed bottom-6 right-20 z-50 p-3 rounded-full bg-white/5 border border-white/10
-             hover:bg-white/10 hover:border-white/20 transition-all duration-300
-             backdrop-blur-sm flex items-center gap-0"
-          >
-            <Palette size={18} style={{ color: accent.color }} />
-            <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-xs font-medium rounded-lg bg-black/80 text-white whitespace-nowrap opacity-0 scale-90 group-hover/tip:opacity-100 group-hover/tip:scale-100 transition-all duration-200 pointer-events-none">
-              Accent: {accent.name}
-            </span>
-          </motion.button>
-
-          {/* Light/Dark mode toggle */}
-          <motion.button
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 2.4 }}
-            onClick={toggleLightMode}
-            className="group/tip fixed bottom-6 right-34 z-50 p-3 rounded-full bg-white/5 border border-white/10
-             hover:bg-white/10 hover:border-white/20 transition-all duration-300
-             text-neutral-500 hover:text-white backdrop-blur-sm"
-          >
-            {lightMode ? <Moon size={18} /> : <Sun size={18} />}
-            <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-xs font-medium rounded-lg bg-black/80 text-white whitespace-nowrap opacity-0 scale-90 group-hover/tip:opacity-100 group-hover/tip:scale-100 transition-all duration-200 pointer-events-none">
-              {lightMode ? "Dark mode" : "Bright mode"}
-            </span>
-          </motion.button>
-
           {displayOrder.map((id, i) => {
             if (id === "__placeholder__") {
               return (
@@ -577,8 +575,9 @@ function App() {
                 layout
                 transition={{ layout: { type: "spring", stiffness: 400, damping: 30 } }}
                 variants={itemVariants}
+                onMouseMove={handleCardMouseMove}
                 style={{ zIndex: isDragging ? 100 : 1 }}
-                className={`${card.className} group/drag ${isDragging ? "opacity-50 scale-95" : ""}`}
+                className={`${card.className} card-spotlight group/drag ${isDragging ? "opacity-50 scale-95" : ""}`}
               >
                 {/* Drag handle */}
                 <div
@@ -596,6 +595,29 @@ function App() {
             );
           })}
         </motion.main>
+
+        {/* Floating dock */}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.5, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50"
+          onMouseMove={(e) => mouseX.set(e.pageX)}
+          onMouseLeave={() => mouseX.set(Infinity)}
+        >
+          <div className="dock">
+            <DockItem mouseX={mouseX} onClick={toggleLightMode} label={lightMode ? "Dark mode" : "Light mode"}>
+              {lightMode ? <Moon size={18} /> : <Sun size={18} />}
+            </DockItem>
+            <DockItem mouseX={mouseX} onClick={cycleAccent} label={`Accent: ${accent.name}`}>
+              <Palette size={18} style={{ color: accent.color }} />
+            </DockItem>
+            <div className="dock-separator" />
+            <DockItem mouseX={mouseX} onClick={resetOrder} label="Reset layout">
+              <RotateCcw size={18} />
+            </DockItem>
+          </div>
+        </motion.div>
       </div>
     </>
   );

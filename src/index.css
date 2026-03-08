@@ -12,6 +12,129 @@
   transition: background-color 0.5s ease, color 0.5s ease, border-color 0.5s ease, box-shadow 0.5s ease, background 0.5s ease;
 }
 
+/* ── Dot grid background ── */
+.dot-grid {
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.light .dot-grid {
+  background-image: radial-gradient(circle, rgba(0, 0, 0, 0.07) 1px, transparent 1px);
+}
+
+/* ── Film grain overlay ── */
+.grain-overlay::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 128px 128px;
+}
+
+/* ── Cursor spotlight on cards ── */
+.card-spotlight {
+  position: relative;
+  overflow: hidden;
+}
+
+.card-spotlight::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  background: radial-gradient(
+    600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(var(--accent-rgb), 0.07),
+    transparent 40%
+  );
+}
+
+.card-spotlight:hover::after {
+  opacity: 1;
+}
+
+/* ── Blur-in text animation ── */
+@keyframes blur-in {
+  0% {
+    opacity: 0;
+    filter: blur(12px);
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0px);
+    transform: translateY(0);
+  }
+}
+
+.animate-blur-in {
+  animation: blur-in 0.8s ease-out forwards;
+  opacity: 0;
+}
+
+/* ── Floating dock ── */
+.dock {
+  display: flex;
+  align-items: end;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 20px;
+  background: rgba(20, 20, 20, 0.75);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.light .dock {
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.dock-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  cursor: pointer;
+  position: relative;
+  color: rgba(255, 255, 255, 0.6);
+  transition: color 0.2s;
+}
+
+.dock-item:hover {
+  color: white;
+}
+
+.light .dock-item {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.light .dock-item:hover {
+  color: rgba(0, 0, 0, 0.9);
+}
+
+.dock-separator {
+  width: 1px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 0 4px;
+  align-self: center;
+}
+
+.light .dock-separator {
+  background: rgba(0, 0, 0, 0.1);
+}
+
 @layer components {
   .card {
     @apply p-6 bg-gradient-to-br from-[#111]/80 to-[#0d0d0d]/80 rounded-2xl border border-white/10 
@@ -256,4 +379,20 @@
 /* Scrollbar */
 .light .scrollbar-thumb-white\/10::-webkit-scrollbar-thumb {
   background: rgba(0,0,0,0.1);
+}
+
+/* Light mode vignette */
+.light .dot-grid {
+  background-image: radial-gradient(circle, rgba(0, 0, 0, 0.06) 1px, transparent 1px);
+}
+
+/* Light mode dock tooltip */
+.light .group\/dock span {
+  background: rgba(0, 0, 0, 0.75) !important;
+  color: white !important;
+}
+
+/* Light mode grain adjustment */
+.light .grain-overlay::before {
+  opacity: 0.02;
 }
