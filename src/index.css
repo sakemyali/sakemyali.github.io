@@ -396,3 +396,14 @@
 .light .grain-overlay::before {
   opacity: 0.02;
 }
+
+/* Light mode command palette */
+.light .fixed .rounded-xl.border {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Card tilt smooth reset */
+.card-spotlight {
+  will-change: transform;
+}

@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from "react";
-import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
-import { Link } from "react-router-dom";
-import { Clock, Trophy, User, BriefcaseBusiness, Code, GripVertical, RotateCcw, FileText, Swords, GraduationCap, Languages, GitBranch, Sparkles, Palette, Sun, Moon } from "lucide-react";
+import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from "framer-motion";
+import { Link, useNavigate } from "react-router-dom";
+import { Clock, Trophy, User, BriefcaseBusiness, Code, GripVertical, RotateCcw, FileText, Swords, GraduationCap, Languages, GitBranch, Sparkles, Palette, Sun, Moon, Search, Command, ArrowRight } from "lucide-react";
 
 import {
   personalInfo,
@@ -18,6 +18,204 @@ import {
   accentThemes,
 } from "./constants/data.jsx";
 
+
+// ── Text Scramble Effect ──
+const CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%&*";
+
+function TextScramble({ text, className, delay = 0 }) {
+  const [display, setDisplay] = useState("");
+  const [started, setStarted] = useState(false);
+
+  useEffect(() => {
+    const startTimer = setTimeout(() => setStarted(true), delay);
+    return () => clearTimeout(startTimer);
+  }, [delay]);
+
+  useEffect(() => {
+    if (!started) return;
+    let frame = 0;
+    const totalFrames = 20;
+    const interval = setInterval(() => {
+      frame++;
+      const progress = frame / totalFrames;
+      const resolved = Math.floor(progress * text.length);
+      let result = "";
+      for (let i = 0; i < text.length; i++) {
+        if (text[i] === " ") {
+          result += " ";
+        } else if (i < resolved) {
+          result += text[i];
+        } else {
+          result += CHARS[Math.floor(Math.random() * CHARS.length)];
+        }
+      }
+      setDisplay(result);
+      if (frame >= totalFrames) {
+        clearInterval(interval);
+        setDisplay(text);
+      }
+    }, 30);
+    return () => clearInterval(interval);
+  }, [text, started]);
+
+  return <span className={className}>{started ? display : ""}</span>;
+}
+
+// ── Command Palette ──
+const PALETTE_SECTIONS = [
+  { id: "profile", label: "Profile", icon: User, type: "section" },
+  { id: "experience", label: "Experience", icon: BriefcaseBusiness, type: "section" },
+  { id: "education", label: "Education", icon: GraduationCap, type: "section" },
+  { id: "projects", label: "Projects", icon: Trophy, type: "section" },
+  { id: "techstack", label: "Tech Stack", icon: Code, type: "section" },
+  { id: "hackathons", label: "Hackathons", icon: Swords, type: "section" },
+  { id: "githubstats", label: "GitHub Activity", icon: GitBranch, type: "section" },
+  { id: "languages", label: "Languages", icon: Languages, type: "section" },
+  { id: "learning", label: "Currently Exploring", icon: Sparkles, type: "section" },
+  { id: "social", label: "Social Links", icon: User, type: "section" },
+];
+
+function CommandPalette({ open, onClose, cardElsRef, projects: projectsList }) {
+  const [query, setQuery] = useState("");
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const inputRef = useRef(null);
+  const navigate = useNavigate();
+
+  const projectItems = projectsList.map((p) => ({
+    id: `project-${p.slug}`,
+    label: p.name,
+    desc: p.tagline,
+    icon: ArrowRight,
+    type: "project",
+    slug: p.slug,
+  }));
+
+  const allItems = [...PALETTE_SECTIONS, ...projectItems];
+
+  const filtered = query
+    ? allItems.filter((item) =>
+        item.label.toLowerCase().includes(query.toLowerCase()) ||
+        (item.desc && item.desc.toLowerCase().includes(query.toLowerCase()))
+      )
+    : allItems;
+
+  useEffect(() => {
+    if (open) {
+      setQuery("");
+      setSelectedIndex(0);
+      setTimeout(() => inputRef.current?.focus(), 50);
+    }
+  }, [open]);
+
+  useEffect(() => {
+    setSelectedIndex(0);
+  }, [query]);
+
+  const execute = useCallback((item) => {
+    if (item.type === "project") {
+      navigate(`/project/${item.slug}`);
+    } else {
+      const el = cardElsRef.current[item.id];
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        el.style.transition = "box-shadow 0.3s";
+        el.style.boxShadow = `0 0 30px rgba(var(--accent-rgb), 0.3)`;
+        setTimeout(() => { el.style.boxShadow = ""; }, 1200);
+      }
+    }
+    onClose();
+  }, [cardElsRef, navigate, onClose]);
+
+  const handleKeyDown = (e) => {
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setSelectedIndex((i) => Math.min(i + 1, filtered.length - 1));
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setSelectedIndex((i) => Math.max(i - 1, 0));
+    } else if (e.key === "Enter" && filtered[selectedIndex]) {
+      execute(filtered[selectedIndex]);
+    } else if (e.key === "Escape") {
+      onClose();
+    }
+  };
+
+  return (
+    <AnimatePresence>
+      {open && (
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm"
+            onClick={onClose}
+          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: -20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: -20 }}
+            transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+            className="fixed top-[20%] left-1/2 -translate-x-1/2 z-[201] w-[90vw] max-w-lg font-mono"
+            onKeyDown={handleKeyDown}
+          >
+            <div className="rounded-xl border border-white/10 bg-[#141414]/95 backdrop-blur-xl shadow-2xl overflow-hidden">
+              {/* Search input */}
+              <div className="flex items-center gap-3 px-4 py-3 border-b border-white/5">
+                <Search size={16} className="text-neutral-500 shrink-0" />
+                <input
+                  ref={inputRef}
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Search sections, projects..."
+                  className="flex-1 bg-transparent text-sm text-white placeholder:text-neutral-500 outline-none"
+                />
+                <kbd className="text-[10px] text-neutral-500 px-1.5 py-0.5 rounded border border-white/10 bg-white/5">ESC</kbd>
+              </div>
+
+              {/* Results */}
+              <div className="max-h-[300px] overflow-y-auto py-2">
+                {filtered.length === 0 && (
+                  <p className="text-sm text-neutral-500 text-center py-6">No results found</p>
+                )}
+                {filtered.map((item, i) => {
+                  const Icon = item.icon;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => execute(item)}
+                      onMouseEnter={() => setSelectedIndex(i)}
+                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-left text-sm transition-colors duration-100 ${
+                        i === selectedIndex
+                          ? "bg-white/8 text-white"
+                          : "text-neutral-400 hover:text-white"
+                      }`}
+                    >
+                      <Icon size={15} className="shrink-0 opacity-50" />
+                      <span className="flex-1">{item.label}</span>
+                      {item.desc && <span className="text-xs text-neutral-600 truncate max-w-[140px]">{item.desc}</span>}
+                      {item.type === "project" && (
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-white/5 text-neutral-500">project</span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Footer */}
+              <div className="flex items-center gap-4 px-4 py-2 border-t border-white/5 text-[10px] text-neutral-600">
+                <span className="flex items-center gap-1"><kbd className="px-1 py-0.5 rounded border border-white/10 bg-white/5">↑↓</kbd> navigate</span>
+                <span className="flex items-center gap-1"><kbd className="px-1 py-0.5 rounded border border-white/10 bg-white/5">↵</kbd> select</span>
+                <span className="flex items-center gap-1"><kbd className="px-1 py-0.5 rounded border border-white/10 bg-white/5">esc</kbd> close</span>
+              </div>
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+  );
+}
 
 function DockItem({ mouseX, children, onClick, label }) {
   const ref = useRef(null);
@@ -234,12 +432,40 @@ function App() {
     setHoverIndex(null);
   };
 
-  // Cursor spotlight handler for cards
+  // Command palette state
+  const [paletteOpen, setPaletteOpen] = useState(false);
+
+  // ⌘K / Ctrl+K listener
+  useEffect(() => {
+    const handler = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setPaletteOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
+
+  // Cursor spotlight + 3D tilt handler for cards
   const handleCardMouseMove = useCallback((e) => {
     const card = e.currentTarget;
     const rect = card.getBoundingClientRect();
-    card.style.setProperty("--mouse-x", `${e.clientX - rect.left}px`);
-    card.style.setProperty("--mouse-y", `${e.clientY - rect.top}px`);
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    // Spotlight
+    card.style.setProperty("--mouse-x", `${x}px`);
+    card.style.setProperty("--mouse-y", `${y}px`);
+    // 3D tilt
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    const rotateX = ((y - centerY) / centerY) * -4;
+    const rotateY = ((x - centerX) / centerX) * 4;
+    card.style.transform = `perspective(800px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.01, 1.01, 1.01)`;
+  }, []);
+
+  const handleCardMouseLeave = useCallback((e) => {
+    e.currentTarget.style.transform = "perspective(800px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)";
   }, []);
 
   const cardContent = {
@@ -275,7 +501,7 @@ function App() {
         <>
           <h2 className="section-title">
             <Code size={20} className="text-neutral-400" />
-            <span>What I Work With</span>
+            <TextScramble text="What I Work With" delay={400} />
           </h2>
           {techStack.map((row, rowIndex) => (
             <div key={rowIndex} className="relative w-full overflow-hidden mask-gradient">
@@ -302,7 +528,7 @@ function App() {
         <>
           <h2 className="section-title">
             <Trophy size={20} className="text-neutral-400" />
-            <span>Projects</span>
+            <TextScramble text="Projects" delay={600} />
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
             {projects.map((project) => (
@@ -364,7 +590,7 @@ function App() {
         <>
           <h2 className="section-title">
             <BriefcaseBusiness size={20} className="text-neutral-400" />
-            <span>Experience</span>
+            <TextScramble text="Experience" delay={500} />
           </h2>
           <ul className="space-y-3 px-3 text-sm overflow-y-auto overflow-x-hidden" style={{ maxHeight: "360px" }}>
             {experiences.map((job, i) => (
@@ -403,7 +629,7 @@ function App() {
         <>
           <h2 className="section-title">
             <Swords size={20} className="text-neutral-400" />
-            <span>Hackathons</span>
+            <TextScramble text="Hackathons" delay={700} />
           </h2>
           {hackathons.length > 0 ? (
             <ul className="space-y-3 px-3 text-sm overflow-y-auto overflow-x-hidden" style={{ maxHeight: "200px" }}>
@@ -432,7 +658,7 @@ function App() {
         <>
           <h2 className="section-title">
             <GraduationCap size={20} className="text-neutral-400" />
-            <span>Education</span>
+            <TextScramble text="Education" delay={550} />
           </h2>
           <ul className="space-y-3 px-3 text-sm overflow-y-auto overflow-x-hidden">
             {education.map((edu, i) => (
@@ -476,7 +702,7 @@ function App() {
         <>
           <h2 className="section-title w-full">
             <GitBranch size={20} className="text-neutral-400" />
-            <span>GitHub Activity</span>
+            <TextScramble text="GitHub Activity" delay={750} />
           </h2>
           <img
             src={`https://ghchart.rshah.org/${githubUsername}`}
@@ -502,7 +728,7 @@ function App() {
         <>
           <h2 className="section-title">
             <Sparkles size={20} className="text-neutral-400" />
-            <span>Currently Exploring</span>
+            <TextScramble text="Currently Exploring" delay={800} />
           </h2>
           <ul className="space-y-2 text-sm">
             {currentlyLearning.map((item, i) => (
@@ -576,7 +802,8 @@ function App() {
                 transition={{ layout: { type: "spring", stiffness: 400, damping: 30 } }}
                 variants={itemVariants}
                 onMouseMove={handleCardMouseMove}
-                style={{ zIndex: isDragging ? 100 : 1 }}
+                onMouseLeave={handleCardMouseLeave}
+                style={{ zIndex: isDragging ? 100 : 1, transformStyle: "preserve-3d", transition: "transform 0.15s ease-out" }}
                 className={`${card.className} card-spotlight group/drag ${isDragging ? "opacity-50 scale-95" : ""}`}
               >
                 {/* Drag handle */}
@@ -606,6 +833,10 @@ function App() {
           onMouseLeave={() => mouseX.set(Infinity)}
         >
           <div className="dock">
+            <DockItem mouseX={mouseX} onClick={() => setPaletteOpen(true)} label="Search ⌘K">
+              <Search size={18} />
+            </DockItem>
+            <div className="dock-separator" />
             <DockItem mouseX={mouseX} onClick={toggleLightMode} label={lightMode ? "Dark mode" : "Light mode"}>
               {lightMode ? <Moon size={18} /> : <Sun size={18} />}
             </DockItem>
@@ -619,6 +850,14 @@ function App() {
           </div>
         </motion.div>
       </div>
+
+      {/* Command Palette */}
+      <CommandPalette
+        open={paletteOpen}
+        onClose={() => setPaletteOpen(false)}
+        cardElsRef={cardElsRef}
+        projects={projects}
+      />
     </>
   );
 }
