@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <rect width="100" height="100" rx="18" fill="#0a0a0a"/>
+  <g transform="translate(50,48)">
+    <!-- Five petals: curved edges (sakura) with notched tips, angular proportions (Idrisid/zellige) -->
+    <g fill="#fff">
+      <path d="M0,-4 C-11,-14 -9,-25 -5,-33 L0,-28 L5,-33 C9,-25 11,-14 0,-4Z" transform="rotate(0)"/>
+      <path d="M0,-4 C-11,-14 -9,-25 -5,-33 L0,-28 L5,-33 C9,-25 11,-14 0,-4Z" transform="rotate(72)"/>
+      <path d="M0,-4 C-11,-14 -9,-25 -5,-33 L0,-28 L5,-33 C9,-25 11,-14 0,-4Z" transform="rotate(144)"/>
+      <path d="M0,-4 C-11,-14 -9,-25 -5,-33 L0,-28 L5,-33 C9,-25 11,-14 0,-4Z" transform="rotate(216)"/>
+      <path d="M0,-4 C-11,-14 -9,-25 -5,-33 L0,-28 L5,-33 C9,-25 11,-14 0,-4Z" transform="rotate(288)"/>
+    </g>
+    <circle cx="0" cy="0" r="5" fill="#0a0a0a"/>
+  </g>
+</svg>
