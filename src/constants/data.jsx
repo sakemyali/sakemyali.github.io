@@ -18,7 +18,7 @@ export const projects = [
     slug: "fract-ol",
     name: "Fract-ol",
     link: "https://github.com/sakemyali/fract-ol",
-    tagline: "GPU-accelerated fractal explorer",
+    tagline: "Real-time fractal explorer in C",
     description: "An interactive fractal rendering engine built in C using the MiniLibX graphics library. Renders Mandelbrot, Julia, and Burning Ship fractals with real-time zoom, color shifting, and smooth iteration coloring.",
     tech: ["C", "MiniLibX", "Mathematics"],
     highlights: ["Real-time zoom with mouse scroll", "Multiple fractal sets", "Psychedelic color palette cycling"],
@@ -106,7 +106,7 @@ export const experiences = [
   {
     title: "Backend Engineer Intern",
     company: "DIGITAL GRID Corporation",
-    period: "Feb 2026 — Present",
+    period: "Feb 2026 — Apr 2026",
     desc: "Engineered a privacy-first RAG system using LangChain and locally hosted Llama 3. Improved context precision by ~20% with RAGAS evaluation and semantic re-ranking. Delivered a fully containerized MVP using Docker.",
   },
   {
@@ -152,15 +152,15 @@ export const hackathons = [
 export const education = [
   {
     school: "42 Tokyo",
-    degree: "Software Engineering",
+    degree: "Software Engineering Program",
     period: "2024 — Present",
     desc: "Ranked 1st place in the Piscine entrance exam. Peer-to-peer learning in C, algorithms, and systems programming.",
   },
   {
     school: "Nottingham Trent University",
     degree: "BSc Cyber Security — 1st Class Honours",
-    period: "2021 — 2024",
-    desc: "CS Project Prize & Outstanding Performance Prize. Focus on cryptography, penetration testing, and secure systems.",
+    period: "2022 — 2025",
+    desc: "CS Project Prize. Focus on cryptography, penetration testing, and secure systems.",
   },
 ];
 
@@ -180,11 +180,6 @@ export const achievements = [
     value: "NTU",
     desc: "Awarded the Department of Computer Science Project Prize in BSc Cyber Security.",
   },
-  {
-    title: "Outstanding Performance",
-    value: "NTU",
-    desc: "Received the Department of Computer Science Prize for Outstanding Performance.",
-  },
 ];
 
 export const skills = [
@@ -202,7 +197,7 @@ export const skills = [
   },
   {
     category: "Cybersecurity & AI",
-    skills: ["Pen Testing / Cryptography", "Quantum Encryption / Networking Security", "Generative AI / LLMs / RAG"],
+    skills: ["Pen Testing / Cryptography", "Post-Quantum Cryptography / Networking Security", "Generative AI / LLMs / RAG"],
   },
   {
     category: "Other",
@@ -236,7 +231,6 @@ export const techStack = [
 export const certificates = [
   "BSc Cyber Security – 1st Class Honours, NTU",
   "CS Project Prize – BSc Cyber Security, NTU",
-  "Outstanding Performance Prize – CS Dept, NTU",
   "1st Place – 42 Tokyo Piscine Entrance Exam",
 ];
 
@@ -252,7 +246,8 @@ export const currentlyLearning = [
   "C – Systems programming & memory safety",
   "Kubernetes – Container orchestration at scale",
   "Advanced RAG – Agentic retrieval & evaluation",
-  "Quantum Computing – Post-quantum cryptography",
+  "Quantum Computing – Gate-based models & algorithms",
+  "Post-Quantum Cryptography – Lattice-based schemes",
 ];
 
 export const githubUsername = "sakemyali";
