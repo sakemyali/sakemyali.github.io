@@ -1,10 +1,12 @@
 import { useParams, Link } from "react-router-dom";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import { projects } from "./constants/data.jsx";
 
 function ProjectPage() {
   const { slug } = useParams();
+  const [videoOk, setVideoOk] = useState(true);
   const project = projects.find((p) => p.slug === slug);
 
   if (!project) {
@@ -25,16 +27,21 @@ function ProjectPage() {
         background: "radial-gradient(ellipse at center, transparent 0%, #0a0a0a 70%)",
       }} />
 
-      {/* Hero video */}
+      {/* Hero video (keyed by slug; falls back to a gradient if no clip exists) */}
       <div className="relative w-full h-[40vh] md:h-[50vh] overflow-hidden">
-        <video
-          src={`/projectvid${project.id}.mp4`}
-          muted
-          loop
-          autoPlay
-          playsInline
-          className="w-full h-full object-cover"
-        />
+        {videoOk ? (
+          <video
+            src={`/projectvid-${project.slug}.mp4`}
+            muted
+            loop
+            autoPlay
+            playsInline
+            onError={() => setVideoOk(false)}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-neutral-800 via-neutral-900 to-black" />
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/40 to-transparent" />
 
         {/* Back button */}
