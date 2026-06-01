@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
-import { Clock, Trophy, User, BriefcaseBusiness, Code, GripVertical, RotateCcw, FileText, Swords, GraduationCap, Languages, GitBranch, Sparkles, Palette, Sun, Moon, Search, Command, ArrowRight } from "lucide-react";
+import { Clock, Trophy, User, BriefcaseBusiness, Code, GripVertical, RotateCcw, FileText, Swords, GraduationCap, Languages, GitBranch, Sparkles, Palette, Sun, Moon, Search, Command, ArrowRight, BookText } from "lucide-react";
 
 import {
   personalInfo,
@@ -11,6 +11,7 @@ import {
   tools,
   hackathons,
   education,
+  publications,
   techStack,
   languages,
   currentlyLearning,
@@ -66,6 +67,7 @@ const PALETTE_SECTIONS = [
   { id: "profile", label: "Profile", icon: User, type: "section" },
   { id: "experience", label: "Experience", icon: BriefcaseBusiness, type: "section" },
   { id: "education", label: "Education", icon: GraduationCap, type: "section" },
+  { id: "publications", label: "Publications", icon: BookText, type: "section" },
   { id: "projects", label: "Projects", icon: Trophy, type: "section" },
   { id: "techstack", label: "Tech Stack", icon: Code, type: "section" },
   { id: "hackathons", label: "Hackathons", icon: Swords, type: "section" },
@@ -248,6 +250,7 @@ const INITIAL_ORDER = [
   "time",
   "experience",
   "education",
+  "publications",
   "techstack",
   "languages",
   "social",
@@ -667,6 +670,28 @@ function App() {
                 <span className="block text-slate-300 text-xs mt-0.5">{edu.degree}</span>
                 <span className="text-slate-500 mt-1">{edu.period}</span>
                 <p className="mt-2 text-slate-400 leading-relaxed">{edu.desc}</p>
+              </li>
+            ))}
+          </ul>
+        </>
+      ),
+    },
+    publications: {
+      className: "card card-default flex flex-col gap-4",
+      content: (
+        <>
+          <h2 className="section-title">
+            <BookText size={20} className="text-neutral-400" />
+            <TextScramble text="Publications" delay={600} />
+          </h2>
+          <ul className="space-y-3 px-3 text-sm overflow-y-auto overflow-x-hidden">
+            {publications.map((pub, i) => (
+              <li key={i} className="soft-card group">
+                <span className="text-white font-medium leading-snug block">{pub.title}</span>
+                <span className="block text-slate-400 text-xs mt-1">{pub.authors}</span>
+                <span className="block text-slate-500 text-xs mt-1 italic">{pub.venue}</span>
+                <span className="inline-block mt-2 text-[10px] uppercase tracking-wide px-2 py-0.5 rounded bg-white/10 text-slate-300">{pub.status}</span>
+                <p className="mt-2 text-slate-400 leading-relaxed">{pub.desc}</p>
               </li>
             ))}
           </ul>

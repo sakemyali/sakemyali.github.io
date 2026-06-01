@@ -101,17 +101,19 @@ function ProjectPage() {
         )}
 
         {/* GitHub link */}
-        <motion.a
-          href={project.link}
-          target="_blank"
-          rel="noopener noreferrer"
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-300 text-sm font-medium"
-        >
-          <ExternalLink size={16} />
-          View on GitHub
-        </motion.a>
+        {project.link && (
+          <motion.a
+            href={project.link}
+            target="_blank"
+            rel="noopener noreferrer"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-300 text-sm font-medium"
+          >
+            <ExternalLink size={16} />
+            View on GitHub
+          </motion.a>
+        )}
       </motion.div>
     </div>
   );

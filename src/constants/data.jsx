@@ -63,6 +63,16 @@ export const projects = [
     tech: ["C", "MiniLibX", "Mathematics"],
     highlights: ["Real-time zoom with mouse scroll", "Multiple fractal sets", "Psychedelic color palette cycling"],
   },
+  {
+    id: 6,
+    slug: "ml-fraud-detection-pqc",
+    name: "ML Fraud Detection + PQC",
+    link: "",
+    tagline: "ML trading-fraud detection secured with post-quantum crypto",
+    description: "A research project at Nottingham Trent University (findings under review at MDPI Technologies). Fraud-detection models in Python/scikit-learn reach 89% accuracy on simulated trading data through ensemble methods and feature engineering over time-series transaction patterns, with generative-AI anomaly detection catching outliers rule-based systems miss. Trading-platform communications are secured with quantum-resistant encryption (CRYSTALS-Dilithium, SPHINCS+).",
+    tech: ["Python", "scikit-learn", "Post-Quantum Crypto"],
+    highlights: ["89% accuracy via ensemble methods + feature engineering", "CRYSTALS-Dilithium & SPHINCS+ for secure comms", "Findings under review at MDPI Technologies"],
+  },
 ];
 
 export const socialLinks = [
@@ -145,12 +155,35 @@ export const hackathons = [
   },
 ];
 
+export const publications = [
+  {
+    title: "Integrating Machine Learning Fraud Detection and Hybrid Post-Quantum Cryptography in a Secure Trading Platform",
+    authors: "Sakurai El Idrissi, M. A., Otuka, R., Nwajana, A.",
+    venue: "Technologies (MDPI) — Special Issue: Disruptive Technologies: Big Data, AI, IoT, Games, and Mixed Reality",
+    status: "Manuscript under review",
+    desc: "Combines ML ensemble methods for financial fraud detection with hybrid post-quantum cryptographic protocols for secure trading infrastructure.",
+    link: "",
+  },
+];
+
 export const education = [
+  {
+    school: "The University of Edinburgh",
+    degree: "MSc High Performance Computing",
+    period: "Sep 2026 — Dec 2027",
+    desc: "Incoming MSc at EPCC — parallel programming, HPC architectures, and large-scale scientific computing.",
+  },
   {
     school: "42 Tokyo",
     degree: "Software Engineering Program",
-    period: "2024 — Present",
+    period: "2025 — Present",
     desc: "Ranked 1st place in the Piscine entrance exam. Peer-to-peer learning in C, algorithms, and systems programming.",
+  },
+  {
+    school: "Sorbonne University",
+    degree: "BSc Mathematics (online)",
+    period: "Oct 2026 — Jun 2029",
+    desc: "Strengthening mathematical foundations alongside engineering and research work.",
   },
   {
     school: "Nottingham Trent University",
@@ -182,8 +215,8 @@ export const skills = [
   {
     category: "Programming & Frameworks",
     skills: [
-      "Python / C / C++",
-      "Django / Celery",
+      "Python / C / C++ / Go",
+      "Django / FastAPI",
       "SQL / LangGraph",
     ],
   },
