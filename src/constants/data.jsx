@@ -104,10 +104,16 @@ export const socialLinks = [
 
 export const experiences = [
   {
+    title: "Backend & ML Engineer (Freelance)",
+    company: "East Capital",
+    period: "2026 — Present",
+    desc: "Built data-acquisition pipelines — web scrapers across Japanese rental platforms with regional filtering, exposed via a RESTful API — and a property-price prediction model trained on multi-source Japanese market data.",
+  },
+  {
     title: "Backend Engineer Intern",
     company: "DIGITAL GRID Corporation",
     period: "Feb 2026 — Apr 2026",
-    desc: "Engineered a privacy-first RAG system using LangChain and locally hosted Llama 3. Improved context precision by ~20% with RAGAS evaluation and semantic re-ranking. Delivered a fully containerized MVP using Docker.",
+    desc: "Built a customer-facing RAG system with LangGraph, combining hybrid vector search with knowledge-graph traversal. Lifted answer accuracy ~20% via automated evaluation and cut database query overhead ~70%. Delivered as a Dockerized service.",
   },
   {
     title: "Full Stack Engineering Intern",
@@ -128,7 +134,7 @@ export const tools = [
   "AWS & Azure – Cloud Infrastructure",
   "Docker – Containerization",
   "Git & GitHub – Version Control",
-  "LangChain – LLM Orchestration",
+  "LangGraph – Agentic LLM Orchestration",
 ];
 
 export const hackathons = [
@@ -188,7 +194,7 @@ export const skills = [
     skills: [
       "Python / C / C++",
       "Django / Celery",
-      "SQL / LangChain",
+      "SQL / LangGraph",
     ],
   },
   {
@@ -224,7 +230,7 @@ export const techStack = [
     { name: "Node.js", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/nodejs/nodejs-original.svg" },
     { name: "Flutter", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/flutter/flutter-original.svg" },
     { name: "SQL", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/azuresqldatabase/azuresqldatabase-original.svg" },
-    { name: "LangChain", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/python/python-original.svg" },
+    { name: "LangGraph", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/python/python-original.svg" },
   ],
 ];
 
