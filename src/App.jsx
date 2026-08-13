@@ -2,6 +2,7 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import { Clock, Trophy, User, BriefcaseBusiness, Code, GripVertical, RotateCcw, FileText, Swords, GraduationCap, Languages, GitBranch, Sparkles, Palette, Sun, Moon, Search, Command, ArrowRight } from "lucide-react";
+import DitherBackground from "./DitherBackground";
 
 import {
   personalInfo,
@@ -766,9 +767,13 @@ function App() {
     <>
       <div className="grain-overlay" />
       <div className="relative min-h-screen flex justify-center items-center bg-[#0a0a0a] text-white p-4 md:py-14 font-mono overflow-hidden dot-grid">
-        {/* Radial vignette */}
+        {/* Dithered WebGL background — dark mode only */}
+        {!lightMode && <DitherBackground />}
+        {/* Radial vignette — softer in dark mode so the dither shows through */}
         <div className="fixed inset-0 pointer-events-none" style={{
-          background: "radial-gradient(ellipse at center, transparent 0%, #0a0a0a 70%)",
+          background: lightMode
+            ? "radial-gradient(ellipse at center, transparent 0%, #0a0a0a 70%)"
+            : "none",
         }} />
 
         <motion.main
