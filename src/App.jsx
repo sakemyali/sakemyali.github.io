@@ -769,9 +769,11 @@ function App() {
       <div className="relative min-h-screen flex justify-center items-center bg-[#0a0a0a] text-white p-4 md:py-14 font-mono overflow-hidden dot-grid">
         {/* Dithered WebGL background — dark mode only */}
         {!lightMode && <DitherBackground />}
-        {/* Radial vignette */}
+        {/* Radial vignette — softer in dark mode so the dither shows through */}
         <div className="fixed inset-0 pointer-events-none" style={{
-          background: "radial-gradient(ellipse at center, transparent 0%, #0a0a0a 70%)",
+          background: lightMode
+            ? "radial-gradient(ellipse at center, transparent 0%, #0a0a0a 70%)"
+            : "none",
         }} />
 
         <motion.main

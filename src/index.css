@@ -218,6 +218,12 @@
   color-scheme: light;
 }
 
+/* Dark base so the page never shows browser-default white behind the
+   WebGL background / vignette (they can fail or be absent). */
+body {
+  background: #0a0a0a;
+}
+
 .light body {
   background: #f5f5f5;
   color: #1a1a1a;

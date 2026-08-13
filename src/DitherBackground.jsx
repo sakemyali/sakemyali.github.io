@@ -23,6 +23,11 @@ uniform vec2 resolution;
 uniform float time;
 uniform float waveSpeed, waveFrequency, waveAmplitude, pixelSize, colorNum;
 uniform vec3 waveColor;
+uniform vec2 holdPos;            // pointer in gl_FragCoord space (bottom-up px)
+uniform float hold;              // 1 while the pointer is held down, eased
+const int NR = 4;                // ripple pool — each finishes independently
+uniform vec2 ripplePos[NR];
+uniform float rippleAge[NR];     // seconds since that ripple's release
 
 vec4 mod289(vec4 x){ return x - floor(x*(1.0/289.0))*289.0; }
 vec4 permute(vec4 x){ return mod289(((x*34.0)+1.0)*x); }
@@ -81,9 +86,40 @@ vec3 dither(vec2 px, vec3 color){
 }
 
 void main(){
+  float aspect = resolution.x/resolution.y;
   vec2 block = floor(gl_FragCoord.xy / pixelSize);
   vec2 uv = (block*pixelSize)/resolution - 0.5;
-  uv.x *= resolution.x/resolution.y;
+  uv.x *= aspect;
+
+  // hold = sustained stir at the pointer
+  {
+    vec2 m = holdPos/resolution - 0.5;
+    m.x *= aspect;
+    vec2 diff = uv - m;
+    float d = length(diff);
+    float e = smoothstep(0.30, 0.0, d) * hold;
+    float ang = e * 3.0;
+    float s = sin(ang), c = cos(ang);
+    uv = m + mat2(c, -s, s, c) * diff;
+    uv += (d > 1e-4 ? diff / d : vec2(0.0)) * e * 0.10;
+  }
+  // release = expanding ripples; each runs to completion independently
+  for (int i = 0; i < NR; i++) {
+    vec2 m = ripplePos[i]/resolution - 0.5;
+    m.x *= aspect;
+    vec2 diff = uv - m;
+    float d = length(diff);
+    float amp = exp(-3.2 * rippleAge[i]);            // fades ~0.8s
+    float ringR = rippleAge[i] * 0.55;               // expands outward
+    // crossfade with the hold stir: ripple grows in as the stir eases out,
+    // so releasing hands off smoothly instead of stacking both at once
+    float e = exp(-35.0 * (d - ringR) * (d - ringR)) * amp * (1.0 - hold);
+    float ang = e * 3.0;
+    float s = sin(ang), c = cos(ang);
+    uv = m + mat2(c, -s, s, c) * diff;
+    uv += (d > 1e-4 ? diff / d : vec2(0.0)) * e * 0.10;
+  }
+
   float f = pattern(uv);
   vec3 col = mix(vec3(0.0), waveColor, f);
   fragColor = vec4(dither(block, col), 1.0);
@@ -105,10 +141,18 @@ export default function DitherBackground() {
     const gl = cv.getContext("webgl2");
     if (!gl) return; // ponytail: no WebGL2 -> nothing renders, root bg stays
 
-    const prog = gl.createProgram();
-    gl.attachShader(prog, compile(gl, gl.VERTEX_SHADER, VERT));
-    gl.attachShader(prog, compile(gl, gl.FRAGMENT_SHADER, FRAG));
-    gl.linkProgram(prog);
+    let prog;
+    try {
+      prog = gl.createProgram();
+      gl.attachShader(prog, compile(gl, gl.VERTEX_SHADER, VERT));
+      gl.attachShader(prog, compile(gl, gl.FRAGMENT_SHADER, FRAG));
+      gl.linkProgram(prog);
+      if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog));
+    } catch (e) {
+      // ponytail: background must never take down the page — degrade to empty
+      console.warn("DitherBackground disabled:", e);
+      return;
+    }
     gl.useProgram(prog);
 
     const buf = gl.createBuffer();
@@ -127,6 +171,30 @@ export default function DitherBackground() {
     gl.uniform1f(U("colorNum"), CFG.colorNum);
     const uTime = U("time");
     const uRes = U("resolution");
+    const uHoldPos = U("holdPos");
+    const uHold = U("hold");
+    const uRipplePos = U("ripplePos");
+    const uRippleAge = U("rippleAge");
+
+    // hold to stir (follows the pointer while down); each release spawns an
+    // independent ripple from a small pool so overlapping clicks don't teleport
+    const NR = 4;
+    const ripples = Array.from({ length: NR }, () => ({ x: -9999, y: -9999, t: -1e9 }));
+    let nextRipple = 0;
+    const click = { x: -9999, y: -9999, down: false, hold: 0 };
+    const setPos = (e) => { click.x = e.clientX; click.y = cv.height - e.clientY; };
+    const onDown = (e) => { setPos(e); click.down = true; };
+    const onMove = (e) => { if (click.down) setPos(e); };
+    const onUp = () => {
+      if (!click.down) return;
+      click.down = false;
+      const r = ripples[nextRipple++ % NR];
+      r.x = click.x; r.y = click.y; r.t = performance.now();
+    };
+    window.addEventListener("pointerdown", onDown);
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onUp);
 
     const resize = () => {
       cv.width = innerWidth;   // dpr 1 -> chunkier dither, like the source site
@@ -140,7 +208,19 @@ export default function DitherBackground() {
     const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
     let raf;
     const t0 = performance.now();
+    const posArr = new Float32Array(NR * 2);
+    const ageArr = new Float32Array(NR);
     const draw = (t) => {
+      click.hold += ((click.down ? 1 : 0) - click.hold) * 0.12; // ease in/out
+      const now = performance.now();
+      for (let i = 0; i < NR; i++) {
+        posArr[i * 2] = ripples[i].x; posArr[i * 2 + 1] = ripples[i].y;
+        ageArr[i] = (now - ripples[i].t) / 1000;
+      }
+      gl.uniform2f(uHoldPos, click.x, click.y);
+      gl.uniform1f(uHold, click.hold);
+      gl.uniform2fv(uRipplePos, posArr);
+      gl.uniform1fv(uRippleAge, ageArr);
       gl.uniform1f(uTime, t);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
     };
@@ -157,7 +237,12 @@ export default function DitherBackground() {
     return () => {
       cancelAnimationFrame(raf);
       window.removeEventListener("resize", resize);
-      gl.getExtension("WEBGL_lose_context")?.loseContext();
+      window.removeEventListener("pointerdown", onDown);
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
+      // ponytail: don't loseContext() here — StrictMode remounts on the same
+      // canvas would then get a dead context and render nothing. GC handles it.
     };
   }, []);
 
@@ -166,7 +251,7 @@ export default function DitherBackground() {
       ref={ref}
       aria-hidden
       className="fixed inset-0 z-0 h-full w-full pointer-events-none"
-      style={{ opacity: 0.55 }}
+      style={{ opacity: 1 }}
     />
   );
 }
