@@ -93,35 +93,42 @@ function ExpandRow({ p, open, onToggle }) {
             </span>
           </span>
           <p className="text-[13px] text-neutral-400 leading-relaxed mt-1.5">{p.tagline}</p>
-          {open && (
-            <div className="mt-4 space-y-4" onClick={(e) => e.stopPropagation()}>
-              <video
-                src={`/projectvid${p.id}.mp4`}
-                muted loop autoPlay playsInline
-                className="w-full max-w-md rounded-lg border border-white/10"
-              />
-              <p className="text-[13px] text-neutral-400 leading-relaxed">{p.description}</p>
-              {p.highlights && (
-                <ul className="space-y-1.5">
-                  {p.highlights.map((h) => (
-                    <li key={h} className="text-[13px] text-neutral-400 flex gap-2.5">
-                      <span className="text-neutral-600">—</span>{h}
-                    </li>
-                  ))}
-                </ul>
-              )}
-              <div className="flex gap-6">
-                <Link to={`/project/${p.slug}`}
-                      className="text-[13px] text-neutral-300 hover:text-white underline underline-offset-4 decoration-white/20 hover:decoration-white/60">
-                  See more →
-                </Link>
-                <a href={p.link} target="_blank" rel="noreferrer"
-                   className="text-[13px] text-neutral-300 hover:text-white underline underline-offset-4 decoration-white/20 hover:decoration-white/60">
-                  GitHub ↗
-                </a>
+          {/* 0fr -> 1fr grid row animates open/closed without measuring heights */}
+          <div style={{
+                 display: "grid",
+                 gridTemplateRows: open ? "1fr" : "0fr",
+                 transition: "grid-template-rows .45s cubic-bezier(.4,0,.2,1)",
+               }}>
+            <div style={{ overflow: "hidden" }} onClick={(e) => e.stopPropagation()}>
+              <div className={`mt-4 space-y-4 pb-1 transition-opacity duration-300 ${open ? "opacity-100 delay-150" : "opacity-0"}`}>
+                <video
+                  src={open ? `/projectvid${p.id}.mp4` : undefined}
+                  muted loop autoPlay playsInline
+                  className="w-full max-w-md aspect-video object-cover rounded-lg border border-white/10"
+                />
+                <p className="text-[13px] text-neutral-400 leading-relaxed">{p.description}</p>
+                {p.highlights && (
+                  <ul className="space-y-1.5">
+                    {p.highlights.map((h) => (
+                      <li key={h} className="text-[13px] text-neutral-400 flex gap-2.5">
+                        <span className="text-neutral-600">—</span>{h}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                <div className="flex gap-6">
+                  <Link to={`/project/${p.slug}`}
+                        className="text-[13px] text-neutral-300 hover:text-white underline underline-offset-4 decoration-white/20 hover:decoration-white/60">
+                    See more →
+                  </Link>
+                  <a href={p.link} target="_blank" rel="noreferrer"
+                     className="text-[13px] text-neutral-300 hover:text-white underline underline-offset-4 decoration-white/20 hover:decoration-white/60">
+                    GitHub ↗
+                  </a>
+                </div>
               </div>
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>
