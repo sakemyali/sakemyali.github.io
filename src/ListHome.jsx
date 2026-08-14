@@ -76,6 +76,12 @@ const MobileHead = ({ children }) => (
 
 // Expandable project row (variant "expand"): unfolds video + highlights inline.
 function ExpandRow({ p, open, onToggle }) {
+  // video src attaches on open but only detaches after the collapse finishes,
+  // so the video doesn't blank out mid-animation
+  const [vidSrc, setVidSrc] = useState(null);
+  useEffect(() => {
+    if (open) setVidSrc(`/projectvid${p.id}.mp4`);
+  }, [open, p.id]);
   return (
     <div className="group/row block cursor-pointer" onClick={onToggle} role="button">
       <div className={`grid grid-cols-[100px_1fr] gap-5 py-4 px-4 -mx-4 rounded-lg border
@@ -98,11 +104,12 @@ function ExpandRow({ p, open, onToggle }) {
                  display: "grid",
                  gridTemplateRows: open ? "1fr" : "0fr",
                  transition: "grid-template-rows .45s cubic-bezier(.4,0,.2,1)",
-               }}>
+               }}
+               onTransitionEnd={() => { if (!open) setVidSrc(null); }}>
             <div style={{ overflow: "hidden" }} onClick={(e) => e.stopPropagation()}>
               <div className={`mt-4 space-y-4 pb-1 transition-opacity duration-300 ${open ? "opacity-100 delay-150" : "opacity-0"}`}>
                 <video
-                  src={open ? `/projectvid${p.id}.mp4` : undefined}
+                  src={vidSrc || undefined}
                   muted loop autoPlay playsInline
                   className="w-full max-w-md aspect-video object-cover rounded-lg border border-white/10"
                 />
