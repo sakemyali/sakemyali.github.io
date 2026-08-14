@@ -88,16 +88,20 @@ export function DancingSkeletons() {
       <style>{`
         /* faint glow lifts the thin bones off the dark background */
         .mcstage .mob { filter: drop-shadow(0 0 2px rgba(255,255,255,.16)); }
-        /* rigid stepped walk: opposite arm/leg pairs, tiny 2-frame bob */
-        .mcstage .mc-walkbob { animation: mc-walkbob .45s steps(2) infinite; }
+        /* Game-accurate walk: limbs swing forward/back (pitch), not sideways —
+           HumanoidModel uses cos(limbSwing*0.6662), legs *1.4, arms opposite
+           their same-side leg, all smooth cosine. Front-on that reads as
+           foreshortening, so perspective+rotateX. Bob is per-footfall (2x). */
+        .mcstage .mc-walkbob { animation: mc-walkbob .45s ease-in-out infinite; }
         .mcstage .mc-head { animation: mc-head 2.4s ease-in-out infinite; }
-        .mcstage .mc-arm-l { animation: mc-stride .9s steps(4) infinite; }
-        .mcstage .mc-arm-r { animation: mc-stride .9s steps(4) infinite reverse; }
-        .mcstage .mc-leg-l { animation: mc-stride .9s steps(4) infinite reverse; }
-        .mcstage .mc-leg-r { animation: mc-stride .9s steps(4) infinite; }
+        .mcstage .mc-arm-l { animation: mc-swing-arm .9s ease-in-out infinite reverse; }
+        .mcstage .mc-arm-r { animation: mc-swing-arm .9s ease-in-out infinite; }
+        .mcstage .mc-leg-l { animation: mc-swing-leg .9s ease-in-out infinite; }
+        .mcstage .mc-leg-r { animation: mc-swing-leg .9s ease-in-out infinite reverse; }
         @keyframes mc-walkbob { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-2px) } }
         @keyframes mc-head { 0%,100% { transform: rotate(-3deg) } 50% { transform: rotate(3deg) } }
-        @keyframes mc-stride { 0%,100% { transform: rotate(18deg) } 50% { transform: rotate(-18deg) } }
+        @keyframes mc-swing-leg { 0%,100% { transform: perspective(240px) rotateX(40deg) } 50% { transform: perspective(240px) rotateX(-40deg) } }
+        @keyframes mc-swing-arm { 0%,100% { transform: perspective(240px) rotateX(28deg) } 50% { transform: perspective(240px) rotateX(-28deg) } }
         @media (prefers-reduced-motion: reduce) {
           .mcstage * { animation: none !important; transition: none !important; }
         }
