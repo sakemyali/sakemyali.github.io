@@ -1,62 +1,73 @@
 import { useEffect, useState } from "react";
 
 // Mobs assembled from the official Minecraft entity texture atlases
-// (public/mc/*.png, © Mojang — non-commercial fan use). Each body part crops
-// its front face from the atlas via background-position; a small phase
-// timeline cycles dance → walk → dance → bow duel → walk home.
+// (public/mc/*.png, © Mojang — non-commercial fan use). Each body part is a
+// real CSS-3D box: front/left/right/top faces cropped from its UV block,
+// sides shaded, whole mob tilted into a 3/4 view. A phase timeline cycles
+// dance → walk → dance → bow duel → walk home.
 
-function Part({ src, atlas, x, y, w, h, s, className, style }) {
+// One textured box. (u,v) = UV block origin, (w,h,d) = box dims in texels.
+// Faces per MC layout: top (u+d,v), front (u+d,v+d), sides flanking front.
+function Box({ src, atlas, u, v, w, h, d, s, className, style }) {
+  const D = d * s;
+  const face = (cx, cy, cw, ch, transform, bright) => (
+    <div key={transform} style={{
+      position: "absolute", left: 0, top: 0,
+      width: cw * s, height: ch * s,
+      backgroundImage: `url(${src})`,
+      backgroundPosition: `${-cx * s}px ${-cy * s}px`,
+      backgroundSize: `${atlas[0] * s}px ${atlas[1] * s}px`,
+      imageRendering: "pixelated",
+      transformOrigin: "0 0",
+      transform,
+      backfaceVisibility: "hidden",
+      filter: `brightness(${bright})`,
+    }} />
+  );
   return (
-    <div
-      className={className}
-      style={{
-        position: "absolute",
-        width: w * s,
-        height: h * s,
-        backgroundImage: `url(${src})`,
-        backgroundPosition: `${-x * s}px ${-y * s}px`,
-        backgroundSize: `${atlas[0] * s}px ${atlas[1] * s}px`,
-        imageRendering: "pixelated",
-        ...style,
-      }}
-    />
+    <div className={className}
+         style={{ position: "absolute", width: w * s, height: h * s, transformStyle: "preserve-3d", ...style }}>
+      {/* inner shell centers the box's depth on its layout plane, so limb
+          rotation animations on the outer div don't wipe the centering */}
+      <div style={{ position: "absolute", inset: 0, transformStyle: "preserve-3d", transform: `translateZ(${-D / 2}px)` }}>
+        {face(u + d, v + d, w, h, `translateZ(${D}px)`, 1)}
+        {face(u, v + d, d, h, "rotateY(-90deg)", 0.72)}
+        {face(u + d + w, v + d, d, h, `translate3d(${w * s}px,0,${D}px) rotateY(90deg)`, 0.72)}
+        {face(u + d, v, w, d, "rotateX(90deg)", 1.15)}
+      </div>
+    </div>
   );
 }
 
 const A32 = [64, 32];
-const FACES = {
-  head: { x: 8, y: 8, w: 8, h: 8 },
-  body: { x: 20, y: 20, w: 8, h: 12 },
-  arm: { x: 42, y: 18, w: 2, h: 12 },
-  leg: { x: 2, y: 18, w: 2, h: 12 },
-};
+// UV block origins + dims for the skeleton family (slim 2x12x2 limbs)
+const HEAD = { u: 0, v: 0, w: 8, h: 8, d: 8 };
+const BODY = { u: 16, v: 16, w: 8, h: 12, d: 4 };
+const ARM = { u: 40, v: 16, w: 2, h: 12, d: 2 };
+const LEG = { u: 0, v: 16, w: 2, h: 12, d: 2 };
 
-// Chibi build: the head is rendered at s*headScale while the body stays at s.
+// Chibi build: the head renders at s*headScale while the body stays at s.
 function SkeletonBody({ src, s, headScale = 1.6 }) {
   const s2 = s * headScale;
-  const hs = 8 * s2; // head px size
+  const hs = 8 * s2;
   const W = Math.max(12 * s, hs);
   const H = hs + 24 * s;
   const cx = W / 2;
+  const t = { src, atlas: A32 };
   return (
-    <div className="mc-bob" style={{ position: "relative", width: W, height: H }}>
-      <Part src={src} atlas={A32} {...FACES.arm} s={s} className="mc-arm-l"
-            style={{ left: cx - 6 * s, top: hs, transformOrigin: "50% 0" }} />
-      <Part src={src} atlas={A32} {...FACES.arm} s={s} className="mc-arm-r"
-            style={{ left: cx + 4 * s, top: hs, transformOrigin: "50% 0" }} />
-      <Part src={src} atlas={A32} {...FACES.leg} s={s} className="mc-leg-l"
-            style={{ left: cx - 2 * s, top: hs + 12 * s, transformOrigin: "50% 0" }} />
-      <Part src={src} atlas={A32} {...FACES.leg} s={s} className="mc-leg-r"
-            style={{ left: cx, top: hs + 12 * s, transformOrigin: "50% 0" }} />
-      <Part src={src} atlas={A32} {...FACES.body} s={s}
-            style={{ left: cx - 4 * s, top: hs }} />
-      <Part src={src} atlas={A32} {...FACES.head} s={s2} className="mc-head"
-            style={{ left: cx - hs / 2, top: 0, transformOrigin: "50% 100%" }} />
-      {/* blush */}
+    <div className="mc-bob" style={{ position: "relative", width: W, height: H, transformStyle: "preserve-3d" }}>
+      <Box {...t} {...ARM} s={s} className="mc-arm-l" style={{ left: cx - 6 * s, top: hs, transformOrigin: "50% 0" }} />
+      <Box {...t} {...ARM} s={s} className="mc-arm-r" style={{ left: cx + 4 * s, top: hs, transformOrigin: "50% 0" }} />
+      <Box {...t} {...LEG} s={s} className="mc-leg-l" style={{ left: cx - 2 * s, top: hs + 12 * s, transformOrigin: "50% 0" }} />
+      <Box {...t} {...LEG} s={s} className="mc-leg-r" style={{ left: cx, top: hs + 12 * s, transformOrigin: "50% 0" }} />
+      <Box {...t} {...BODY} s={s} style={{ left: cx - 4 * s, top: hs }} />
+      <Box {...t} {...HEAD} s={s2} className="mc-head" style={{ left: cx - hs / 2, top: 0, transformOrigin: "50% 100%" }} />
+      {/* blush, floated just in front of the head's front face */}
       {[cx - hs / 2 + 1 * s2, cx + hs / 2 - 2 * s2].map((left) => (
         <div key={left} style={{
           position: "absolute", left, top: 5.2 * s2, width: s2, height: 0.7 * s2,
-          background: "#ff9fb0", opacity: 0.55, borderRadius: "40%", zIndex: 1,
+          background: "#ff9fb0", opacity: 0.55, borderRadius: "40%",
+          transform: `translateZ(${4 * s2 + 1}px)`,
         }} />
       ))}
     </div>
@@ -91,7 +102,7 @@ export function DancingSkeletons() {
 
   return (
     <div className={`mcstage ph-${mode}`} aria-hidden="true"
-         style={{ position: "relative", width: 300, height: 152 }}>
+         style={{ position: "relative", width: 300, height: 156 }}>
       {MOBS.map((m) => (
         <div key={m.cls} className={`mob ${m.cls}`}
              style={{
@@ -100,8 +111,12 @@ export function DancingSkeletons() {
                transition: "transform 2.4s linear",
                transitionDelay: m.baby ? ".4s" : "0s", // the runt lags behind
              }}>
-          <div className="mc-hurtwrap" style={{ transformOrigin: "50% 100%", transition: "transform .3s" }}>
-            <SkeletonBody src={m.src} s={m.s} headScale={m.headScale} />
+          {/* 3/4-view tilt: shows front + right side + top of every box */}
+          <div style={{ transform: "perspective(600px) rotateX(-12deg) rotateY(-30deg)", transformStyle: "preserve-3d" }}>
+            <div className="mc-hurtwrap"
+                 style={{ transformOrigin: "50% 100%", transition: "transform .3s", transformStyle: "preserve-3d" }}>
+              <SkeletonBody src={m.src} s={m.s} headScale={m.headScale} />
+            </div>
           </div>
         </div>
       ))}
@@ -109,7 +124,7 @@ export function DancingSkeletons() {
       <div className="mc-arrow mc-arrow-2" />
       {[[26, 0], [96, 0.8], [168, 1.6]].map(([left, delay]) => (
         <span key={left} className="mc-heart"
-              style={{ left, bottom: 118, animationDelay: `${delay}s` }}>♥</span>
+              style={{ left, bottom: 120, animationDelay: `${delay}s` }}>♥</span>
       ))}
       <style>{`
         .mcstage .mc-bob { animation: mc-bob .6s ease-in-out infinite; transform-origin: 50% 100%; }
@@ -163,23 +178,19 @@ export function DancingSkeletons() {
   );
 }
 
-// Wither boss center head (front face, 8x8 at (8,8) in the 64x64 atlas),
-// used as the "About" section name.
+// Wither boss center head as a tiny 3D cube, used as the "About" label.
 export function WitherHead({ px = 2 }) {
   return (
-    <span
-      role="img"
-      aria-label="About"
-      style={{
-        display: "inline-block",
-        verticalAlign: "middle",
-        width: 8 * px,
-        height: 8 * px,
-        backgroundImage: "url(/mc/wither.png)",
-        backgroundPosition: `${-8 * px}px ${-8 * px}px`,
-        backgroundSize: `${64 * px}px ${64 * px}px`,
-        imageRendering: "pixelated",
-      }}
-    />
+    <span role="img" aria-label="About"
+          style={{ display: "inline-block", verticalAlign: "middle", width: 10 * px, height: 9 * px }}>
+      <span style={{
+        position: "relative", display: "block", width: 8 * px, height: 8 * px,
+        transform: "perspective(200px) rotateX(-14deg) rotateY(-28deg)",
+        transformStyle: "preserve-3d",
+      }}>
+        <Box src="/mc/wither.png" atlas={[64, 64]} u={0} v={0} w={8} h={8} d={8} s={px}
+             style={{ left: 0, top: 0 }} />
+      </span>
+    </span>
   );
 }
