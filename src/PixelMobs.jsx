@@ -3,10 +3,11 @@ import { useEffect, useState } from "react";
 // Flat 2D mobs using the official Minecraft entity textures (public/mc/*.png,
 // © Mojang — non-commercial fan use): each body part is a div cropping its
 // FRONT face out of the texture atlas via background-position — the game's
-// original 2D appearance. Each page load picks ONE scene at random — dance,
-// patrol, or bow duel — and loops it.
+// original 2D appearance. Animation follows 2D-Minecraft conventions: rigid
+// bodies (no squash), tiny head motion, chunky steps() limb timing, two-arm
+// bow pose. Each page load picks ONE scene at random and loops it.
 
-function Part({ src, atlas, x, y, w, h, s, className, style }) {
+function Part({ src, atlas, x, y, w, h, s, className, style, children }) {
   return (
     <div
       className={className}
@@ -20,7 +21,9 @@ function Part({ src, atlas, x, y, w, h, s, className, style }) {
         imageRendering: "pixelated",
         ...style,
       }}
-    />
+    >
+      {children}
+    </div>
   );
 }
 
@@ -29,13 +32,29 @@ const A32 = [64, 32];
 const HEAD = { x: 8, y: 8, w: 8, h: 8 };
 const BODY = { x: 20, y: 20, w: 8, h: 12 };
 // the spine lives on the body's BACK face — in-game it shows through the
-// front's transparent rows, so we layer it behind the front crop
+// front's transparent rows; in flat 2D we layer it behind at full strength
 const BODY_BACK = { x: 32, y: 20, w: 8, h: 12 };
 const ARM = { x: 42, y: 18, w: 2, h: 12 };
 const LEG = { x: 2, y: 18, w: 2, h: 12 };
 
+// Blocky bow + string, drawn in arm-local coords at the hand; the arm's
+// fight-pose rotation carries it vertical. Hidden outside the duel.
+const Bow = ({ s }) => (
+  <>
+    <div className="mc-bow" style={{
+      position: "absolute", left: -3 * s, top: 9.5 * s, width: 8 * s, height: 1.5 * s,
+      background: "#4a3520",
+    }} />
+    <div className="mc-bow" style={{
+      position: "absolute", left: -3 * s, top: 7.5 * s, width: 8 * s, height: 1,
+      background: "rgba(225,225,225,.65)",
+    }} />
+  </>
+);
+
 // Chibi build: the head renders at s*headScale while the body stays at s.
-function SkeletonBody({ src, s, headScale = 1.35 }) {
+// bow: "r" | "l" — which arm holds the bow during the duel.
+function SkeletonBody({ src, s, headScale = 1.35, bow }) {
   const s2 = s * headScale;
   const hs = 8 * s2;
   const W = Math.max(12 * s, hs);
@@ -44,11 +63,15 @@ function SkeletonBody({ src, s, headScale = 1.35 }) {
   const t = { src, atlas: A32 };
   return (
     <div className="mc-bob" style={{ position: "relative", width: W, height: H }}>
-      <Part {...t} {...ARM} s={s} className="mc-arm-l" style={{ left: cx - 6 * s, top: hs, transformOrigin: "50% 0" }} />
-      <Part {...t} {...ARM} s={s} className="mc-arm-r" style={{ left: cx + 4 * s, top: hs, transformOrigin: "50% 0" }} />
+      <Part {...t} {...ARM} s={s} className="mc-arm-l" style={{ left: cx - 6 * s, top: hs, transformOrigin: "50% 0" }}>
+        {bow === "l" && <Bow s={s} />}
+      </Part>
+      <Part {...t} {...ARM} s={s} className="mc-arm-r" style={{ left: cx + 4 * s, top: hs, transformOrigin: "50% 0" }}>
+        {bow === "r" && <Bow s={s} />}
+      </Part>
       <Part {...t} {...LEG} s={s} className="mc-leg-l" style={{ left: cx - 3 * s, top: hs + 10 * s, transformOrigin: "50% 0" }} />
       <Part {...t} {...LEG} s={s} className="mc-leg-r" style={{ left: cx + 1 * s, top: hs + 10 * s, transformOrigin: "50% 0" }} />
-      <Part {...t} {...BODY_BACK} s={s} style={{ left: cx - 4 * s, top: hs, filter: "brightness(.7)" }} />
+      <Part {...t} {...BODY_BACK} s={s} style={{ left: cx - 4 * s, top: hs }} />
       <Part {...t} {...BODY} s={s} style={{ left: cx - 4 * s, top: hs }} />
       <Part {...t} {...HEAD} s={s2} className="mc-head" style={{ left: cx - hs / 2, top: 0, transformOrigin: "50% 100%" }} />
       {/* blush */}
@@ -63,9 +86,9 @@ function SkeletonBody({ src, s, headScale = 1.35 }) {
 }
 
 const MOBS = [
-  { cls: "mob-a", src: "/mc/skeleton.png", s: 3, headScale: 1.35, home: 0 },
+  { cls: "mob-a", src: "/mc/skeleton.png", s: 3, headScale: 1.35, home: 0, bow: "r" },
   { cls: "mob-w", src: "/mc/wither_skeleton.png", s: 4, headScale: 1.3, home: 70 },
-  { cls: "mob-b", src: "/mc/skeleton.png", s: 3, headScale: 1.35, home: 150 },
+  { cls: "mob-b", src: "/mc/skeleton.png", s: 3, headScale: 1.35, home: 150, bow: "l" },
   { cls: "mob-baby", src: "/mc/skeleton.png", s: 2, headScale: 1.5, home: 215, baby: true },
 ];
 
@@ -95,7 +118,7 @@ export function DancingSkeletons() {
                transitionDelay: m.baby ? ".6s" : "0s", // the runt lags behind
              }}>
           <div className="mc-hurtwrap" style={{ transformOrigin: "50% 100%", transition: "transform .3s" }}>
-            <SkeletonBody src={m.src} s={m.s} headScale={m.headScale} />
+            <SkeletonBody src={m.src} s={m.s} headScale={m.headScale} bow={m.bow} />
           </div>
         </div>
       ))}
@@ -108,38 +131,46 @@ export function DancingSkeletons() {
       <style>{`
         /* faint glow lifts the thin bones off the dark background */
         .mcstage .mob { filter: drop-shadow(0 0 2px rgba(255,255,255,.16)); }
+        /* rigid idle: plain bob, no squash — Minecraft bodies don't stretch */
         .mcstage .mc-bob { animation: mc-bob 1.2s ease-in-out infinite; transform-origin: 50% 100%; }
         .mcstage .mob-baby .mc-bob { animation-duration: .9s; }
         .mcstage .mc-head { animation: mc-head 2.4s ease-in-out infinite; }
-        .mcstage .mc-arm-l { animation: mc-arm-l 1.2s ease-in-out infinite; }
-        .mcstage .mc-arm-r { animation: mc-arm-r 1.2s ease-in-out infinite; }
-        .mcstage .mc-leg-l { animation: mc-step 1.2s ease-in-out infinite; }
-        .mcstage .mc-leg-r { animation: mc-step 1.2s ease-in-out infinite reverse; }
-        @keyframes mc-bob { 0%,100% { transform: translateY(0) scaleY(1) } 35% { transform: translateY(-3px) scaleY(1.04) } 70% { transform: translateY(1px) scaleY(.96) } }
-        @keyframes mc-head { 0%,100% { transform: rotate(-8deg) } 50% { transform: rotate(8deg) } }
+        /* steps(4) keeps limb motion chunky and game-like */
+        .mcstage .mc-arm-l { animation: mc-arm-l 1.2s steps(4) infinite; }
+        .mcstage .mc-arm-r { animation: mc-arm-r 1.2s steps(4) infinite; }
+        .mcstage .mc-leg-l { animation: mc-step 1.2s steps(4) infinite; }
+        .mcstage .mc-leg-r { animation: mc-step 1.2s steps(4) infinite reverse; }
+        @keyframes mc-bob { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-2px) } }
+        @keyframes mc-head { 0%,100% { transform: rotate(-3deg) } 50% { transform: rotate(3deg) } }
         /* wave caps at ~168deg: past vertical the arm sweeps inward through
            the (oversized chibi) head */
         @keyframes mc-arm-l { 0%,100% { transform: rotate(132deg) } 50% { transform: rotate(168deg) } }
         @keyframes mc-arm-r { 0%,100% { transform: rotate(-132deg) } 50% { transform: rotate(-168deg) } }
         @keyframes mc-step { 0%,100% { transform: rotate(-6deg) } 50% { transform: rotate(6deg) } }
 
-        /* patrol: arms drop and swing, legs stride, no bounce */
-        .ph-walk .mc-bob { animation: none; }
-        .ph-walk .mc-arm-l { animation: mc-stride .9s ease-in-out infinite; }
-        .ph-walk .mc-arm-r { animation: mc-stride .9s ease-in-out infinite reverse; }
-        .ph-walk .mc-leg-l { animation: mc-stride .9s ease-in-out infinite reverse; }
-        .ph-walk .mc-leg-r { animation: mc-stride .9s ease-in-out infinite; }
-        @keyframes mc-stride { 0%,100% { transform: rotate(20deg) } 50% { transform: rotate(-20deg) } }
+        /* patrol: opposite arm/leg pairs at a modest angle, tiny stepped bob */
+        .ph-walk .mc-bob { animation: mc-walkbob .45s steps(2) infinite; }
+        .ph-walk .mc-arm-l { animation: mc-stride .9s steps(4) infinite; }
+        .ph-walk .mc-arm-r { animation: mc-stride .9s steps(4) infinite reverse; }
+        .ph-walk .mc-leg-l { animation: mc-stride .9s steps(4) infinite reverse; }
+        .ph-walk .mc-leg-r { animation: mc-stride .9s steps(4) infinite; }
+        @keyframes mc-stride { 0%,100% { transform: rotate(18deg) } 50% { transform: rotate(-18deg) } }
+        @keyframes mc-walkbob { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-2px) } }
 
-        /* bow duel (loops): outer skeletons aim at each other, arrows fly,
-           hurt-flash + knockback on hit; the wither ducks; the baby dances on */
-        .ph-fight .mob-a .mc-arm-r,
-        .ph-fight .mob-b .mc-arm-l { animation: none; }
-        .ph-fight .mob-a .mc-arm-r { transform: rotate(-90deg); }
-        .ph-fight .mob-b .mc-arm-l { transform: rotate(90deg); }
+        /* bow duel (loops): two-arm archery pose — bow arm extended, draw arm
+           bent across the chest toward the string; arrows fly, hurt-flash +
+           knockback on hit; the wither ducks; the baby dances on */
+        .mc-bow { display: none; }
+        .ph-fight .mc-bow { display: block; }
+        .ph-fight .mob-a .mc-arm-r, .ph-fight .mob-a .mc-arm-l,
+        .ph-fight .mob-b .mc-arm-l, .ph-fight .mob-b .mc-arm-r { animation: none; }
+        .ph-fight .mob-a .mc-arm-r { transform: rotate(-88deg); }
+        .ph-fight .mob-a .mc-arm-l { transform: rotate(-65deg); }
+        .ph-fight .mob-b .mc-arm-l { transform: rotate(88deg); }
+        .ph-fight .mob-b .mc-arm-r { transform: rotate(65deg); }
         .ph-fight .mob-a { animation: mc-hurt-a 5.5s linear infinite; }
         .ph-fight .mob-b { animation: mc-hurt-b 5.5s linear infinite; }
-        .ph-fight .mob-w .mc-hurtwrap { transform: translateY(14px) scaleY(.88); }
+        .ph-fight .mob-w .mc-hurtwrap { transform: translateY(14px); }
         @keyframes mc-hurt-b { 0%,39% { filter: drop-shadow(0 0 2px rgba(255,255,255,.16)); transform: none } 41%,52% { filter: sepia(1) saturate(7) hue-rotate(-55deg) brightness(1.1); transform: translateX(9px) } 56%,100% { filter: drop-shadow(0 0 2px rgba(255,255,255,.16)); transform: none } }
         @keyframes mc-hurt-a { 0%,61% { filter: drop-shadow(0 0 2px rgba(255,255,255,.16)); transform: none } 63%,74% { filter: sepia(1) saturate(7) hue-rotate(-55deg) brightness(1.1); transform: translateX(-9px) } 78%,100% { filter: drop-shadow(0 0 2px rgba(255,255,255,.16)); transform: none } }
         .mc-arrow { position: absolute; width: 12px; height: 3px; background: #cfcfcf; bottom: 64px; opacity: 0; }
