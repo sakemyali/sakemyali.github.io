@@ -1,80 +1,52 @@
 import { useEffect, useState } from "react";
 
-// Flat 2D pixel skeletons, hand-drawn to match the dithered monochrome smoke
-// background (original art). Parts are string grids rendered as SVG rects;
-// limbs animate with the same CSS choreography as before. Each page load
-// picks ONE scene at random — dance, patrol, or bow duel — and loops it.
+// Flat 2D mobs using the official Minecraft entity textures (public/mc/*.png,
+// © Mojang — non-commercial fan use): each body part is a div cropping its
+// FRONT face out of the texture atlas via background-position — the game's
+// original 2D appearance. Each page load picks ONE scene at random — dance,
+// patrol, or bow duel — and loops it.
 
-// grid chars: '#' bone, '+' dither shade, 'o' dark, 'w' light, '.' empty
-const HEAD_G = [
-  "########",
-  "#+####+#",
-  "#oo##oo#",
-  "########",
-  "###oo###",
-  "#+o##o+#",
-  "########",
-  "+######+",
-];
-const BODY_G = [
-  "########",
-  "#o#oo#o#",
-  "########",
-  "#o#oo#o#",
-  "########",
-  "#o#oo#o#",
-  "+##++##+",
-  "..#++#..",
-  "..#++#..",
-  "..####..",
-  ".######.",
-  "#+####+#",
-];
-const ARM_G = ["##", "#+", "##", "##", "+#", "oo", "##", "##", "#+", "##", "##", "++"];
-const LEG_G = ["##", "+#", "##", "##", "#+", "oo", "##", "##", "+#", "##", "##", "##"];
-const WSKULL_G = [
-  ".######.",
-  "########",
-  "#ww##ww#",
-  "########",
-  "##+##+##",
-  "#w#ww#w#",
-  ".######.",
-  "..####..",
-];
-
-const BONE = { "#": "#e6e6e6", "+": "#9e9e9e", o: "#161616" };
-const DARK = { "#": "#4a4a4a", "+": "#303030", o: "#101010" };
-const WSKULL = { "#": "#3f3f3f", "+": "#262626", w: "#e8e8e8" };
-
-function PixelPart({ grid, pal, s, className, style }) {
+function Part({ src, atlas, x, y, w, h, s, className, style }) {
   return (
-    <svg width={grid[0].length * s} height={grid.length * s} shapeRendering="crispEdges"
-         className={className} style={{ position: "absolute", ...style }}>
-      {grid.map((row, y) =>
-        [...row].map((c, x) =>
-          pal[c] ? <rect key={`${x},${y}`} x={x * s} y={y * s} width={s} height={s} fill={pal[c]} /> : null
-        )
-      )}
-    </svg>
+    <div
+      className={className}
+      style={{
+        position: "absolute",
+        width: w * s,
+        height: h * s,
+        backgroundImage: `url(${src})`,
+        backgroundPosition: `${-x * s}px ${-y * s}px`,
+        backgroundSize: `${atlas[0] * s}px ${atlas[1] * s}px`,
+        imageRendering: "pixelated",
+        ...style,
+      }}
+    />
   );
 }
 
+const A32 = [64, 32];
+// Front-face crops for the skeleton family (slim 2x12x2 limbs)
+const HEAD = { x: 8, y: 8, w: 8, h: 8 };
+const BODY = { x: 20, y: 20, w: 8, h: 12 };
+const ARM = { x: 42, y: 18, w: 2, h: 12 };
+const LEG = { x: 2, y: 18, w: 2, h: 12 };
+
 // Chibi build: the head renders at s*headScale while the body stays at s.
-function SkeletonBody({ pal, s, headScale = 1.35 }) {
+function SkeletonBody({ src, s, headScale = 1.35 }) {
   const s2 = s * headScale;
   const hs = 8 * s2;
   const W = Math.max(12 * s, hs);
-  const H = hs + 22 * s; // legs tuck 2 texels up under the pelvis
-  const cx = W / 2;
+  const H = hs + 22 * s; // legs tuck 2 texels up: the texture's pelvis rows
+  const cx = W / 2;      // are transparent and read as a floating torso
+  const t = { src, atlas: A32 };
   return (
     <div className="mc-bob" style={{ position: "relative", width: W, height: H }}>
-      <PixelPart grid={ARM_G} pal={pal} s={s} className="mc-arm-l" style={{ left: cx - 6 * s, top: hs, transformOrigin: "50% 0" }} />
-      <PixelPart grid={ARM_G} pal={pal} s={s} className="mc-arm-r" style={{ left: cx + 4 * s, top: hs, transformOrigin: "50% 0" }} />
-      <PixelPart grid={LEG_G} pal={pal} s={s} className="mc-leg-l" style={{ left: cx - 3 * s, top: hs + 10 * s, transformOrigin: "50% 0" }} />
-      <PixelPart grid={LEG_G} pal={pal} s={s} className="mc-leg-r" style={{ left: cx + 1 * s, top: hs + 10 * s, transformOrigin: "50% 0" }} />
-      <PixelPart grid={BODY_G} pal={pal} s={s} style={{ left: cx - 4 * s, top: hs }} />
-      <PixelPart grid={HEAD_G} pal={pal} s={s2} className="mc-head" style={{ left: cx - hs / 2, top: 0, transformOrigin: "50% 100%" }} />
+      <Part {...t} {...ARM} s={s} className="mc-arm-l" style={{ left: cx - 6 * s, top: hs, transformOrigin: "50% 0" }} />
+      <Part {...t} {...ARM} s={s} className="mc-arm-r" style={{ left: cx + 4 * s, top: hs, transformOrigin: "50% 0" }} />
+      <Part {...t} {...LEG} s={s} className="mc-leg-l" style={{ left: cx - 3 * s, top: hs + 10 * s, transformOrigin: "50% 0" }} />
+      <Part {...t} {...LEG} s={s} className="mc-leg-r" style={{ left: cx + 1 * s, top: hs + 10 * s, transformOrigin: "50% 0" }} />
+      <Part {...t} {...BODY} s={s} style={{ left: cx - 4 * s, top: hs }} />
+      <Part {...t} {...HEAD} s={s2} className="mc-head" style={{ left: cx - hs / 2, top: 0, transformOrigin: "50% 100%" }} />
       {/* blush */}
       {[cx - hs / 2 + 1 * s2, cx + hs / 2 - 2 * s2].map((left) => (
         <div key={left} style={{
@@ -87,10 +59,10 @@ function SkeletonBody({ pal, s, headScale = 1.35 }) {
 }
 
 const MOBS = [
-  { cls: "mob-a", pal: BONE, s: 3, headScale: 1.35, home: 0 },
-  { cls: "mob-w", pal: DARK, s: 4, headScale: 1.3, home: 70 },
-  { cls: "mob-b", pal: BONE, s: 3, headScale: 1.35, home: 150 },
-  { cls: "mob-baby", pal: BONE, s: 2, headScale: 1.5, home: 215, baby: true },
+  { cls: "mob-a", src: "/mc/skeleton.png", s: 3, headScale: 1.35, home: 0 },
+  { cls: "mob-w", src: "/mc/wither_skeleton.png", s: 4, headScale: 1.3, home: 70 },
+  { cls: "mob-b", src: "/mc/skeleton.png", s: 3, headScale: 1.35, home: 150 },
+  { cls: "mob-baby", src: "/mc/skeleton.png", s: 2, headScale: 1.5, home: 215, baby: true },
 ];
 
 const SCENES = ["dance", "walk", "fight"];
@@ -119,7 +91,7 @@ export function DancingSkeletons() {
                transitionDelay: m.baby ? ".6s" : "0s", // the runt lags behind
              }}>
           <div className="mc-hurtwrap" style={{ transformOrigin: "50% 100%", transition: "transform .3s" }}>
-            <SkeletonBody pal={m.pal} s={m.s} headScale={m.headScale} />
+            <SkeletonBody src={m.src} s={m.s} headScale={m.headScale} />
           </div>
         </div>
       ))}
@@ -185,12 +157,13 @@ export function DancingSkeletons() {
   );
 }
 
-// Flat 2D wither skull, used as the "About" section name.
+// Wither boss center head, flat front face (8x8 at (8,8) in the 64x64 atlas),
+// used as the "About" section name.
 export function WitherHead({ px = 2 }) {
   return (
     <span role="img" aria-label="About"
           style={{ display: "inline-block", verticalAlign: "middle", position: "relative", width: 8 * px, height: 8 * px }}>
-      <PixelPart grid={WSKULL_G} pal={WSKULL} s={px} style={{ left: 0, top: 0 }} />
+      <Part src="/mc/wither.png" atlas={[64, 64]} x={8} y={8} w={8} h={8} s={px} style={{ left: 0, top: 0 }} />
     </span>
   );
 }
