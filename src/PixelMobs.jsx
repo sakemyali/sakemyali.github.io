@@ -81,19 +81,23 @@ function Mob({ m, stageRef }) {
   useEffect(() => {
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const el = elRef.current, face = faceRef.current;
-    let x = m.home, dir = m.home > 150 ? -1 : 1, raf, timer, alive = true;
+    let x = m.home, dir = m.home > 150 ? -1 : 1, raf, timer, pauseTimer, alive = true;
+    let spd = SPEED * (0.8 + Math.random() * 0.5); // per-segment gait variation
     face.style.transform = `scaleX(${dir})`;
+    const go = (p) => { poseRef.current = p; setPose(p); };
+    const turn = () => { dir *= -1; face.style.transform = `scaleX(${dir})`; };
     let last = performance.now();
     const step = (t) => {
       const dt = Math.min((t - last) / 1000, 0.05);
       last = t;
       if (poseRef.current === "walk") {
         const max = Math.max(0, (stageRef.current?.clientWidth ?? 320) - el.offsetWidth);
-        x += dir * SPEED * (m.baby ? 1.2 : 1) * dt;
-        if (x <= 0 || x >= max) { // end of the line: turn around
+        x += dir * spd * (m.baby ? 1.2 : 1) * dt;
+        if (x <= 0 || x >= max) { // end of the line: pause a beat, then turn
           x = Math.min(Math.max(x, 0), max);
-          dir *= -1;
-          face.style.transform = `scaleX(${dir})`;
+          go("idle");
+          clearTimeout(pauseTimer);
+          pauseTimer = setTimeout(() => { if (alive) { turn(); go("walk"); } }, 250 + Math.random() * 400);
         }
         el.style.transform = `translateX(${x}px)`;
       }
@@ -104,16 +108,15 @@ function Mob({ m, stageRef }) {
       if (!alive) return;
       const r = Math.random();
       const next = r < 0.45 ? "walk" : r < 0.65 ? "idle" : r < 0.85 ? "front" : "back";
-      if (next === "walk" && Math.random() < 0.4) { // sometimes wander off the other way
-        dir *= -1;
-        face.style.transform = `scaleX(${dir})`;
+      if (next === "walk") {
+        spd = SPEED * (0.8 + Math.random() * 0.5);
+        if (Math.random() < 0.55) turn(); // often wander off the other way
       }
-      poseRef.current = next;
-      setPose(next);
-      timer = setTimeout(decide, 1200 + Math.random() * 2800);
+      go(next);
+      timer = setTimeout(decide, 900 + Math.random() * 2200);
     };
-    timer = setTimeout(decide, 600 + Math.random() * 2400);
-    return () => { alive = false; cancelAnimationFrame(raf); clearTimeout(timer); };
+    timer = setTimeout(decide, 500 + Math.random() * 1800);
+    return () => { alive = false; cancelAnimationFrame(raf); clearTimeout(timer); clearTimeout(pauseTimer); };
   }, [m, stageRef]);
 
   return (
