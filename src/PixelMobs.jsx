@@ -1,11 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 // Flat 2D mobs in PROFILE view using the official Minecraft entity textures
-// (public/mc/*.png, © Mojang — non-commercial fan use). Side view is how 2D
-// renditions of Minecraft (Paper Minecraft etc.) show the walk: limbs pivot
-// at the hip/shoulder and scissor forward-back, which in profile is a plain
-// screen-plane rotation — the game's cos-wave walk, legs swinging wider than
-// arms, each arm counter-phased to its same-side leg. Far limbs are dimmed.
+// (public/mc/*.png, © Mojang — non-commercial fan use). Each mob runs its own
+// little wander brain, like in-game AI: walk a bit, stop, look at the viewer,
+// glance back over the shoulder — independently, bounded by the text width.
 
 function Part({ src, atlas, x, y, w, h, s, className, style }) {
   return (
@@ -28,6 +26,7 @@ function Part({ src, atlas, x, y, w, h, s, className, style }) {
 const A32 = [64, 32];
 // Side-face crops for the skeleton family (right-facing profile)
 const HEAD_SIDE = { x: 0, y: 8, w: 8, h: 8 };
+const HEAD_FRONT = { x: 8, y: 8, w: 8, h: 8 };
 const BODY_SIDE = { x: 16, y: 20, w: 4, h: 12 };
 const ARM_SIDE = { x: 40, y: 18, w: 2, h: 12 };
 const LEG_SIDE = { x: 0, y: 18, w: 2, h: 12 };
@@ -36,7 +35,8 @@ const LEG_SIDE = { x: 0, y: 18, w: 2, h: 12 };
 const SPINE = { x: 35, y: 20, w: 2, h: 12 };
 
 // Chibi build: the head renders at s*headScale while the body stays at s.
-function SkeletonBody({ src, s, headScale = 1.35 }) {
+// headPose: "side" | "front" (facing the viewer) | "back" (glancing behind)
+function SkeletonBody({ src, s, headScale = 1.35, headPose = "side" }) {
   const s2 = s * headScale;
   const hs = 8 * s2;
   const W = Math.max(8 * s, hs);
@@ -58,53 +58,95 @@ function SkeletonBody({ src, s, headScale = 1.35 }) {
             style={{ left: cx - s, top: hs + 10 * s, transformOrigin: "50% 0" }} />
       <Part {...t} {...ARM_SIDE} s={s} className="mc-limb-arm"
             style={{ left: cx - s, top: hs, transformOrigin: "50% 0" }} />
-      <Part {...t} {...HEAD_SIDE} s={s2} className="mc-head"
-            style={{ left: cx - hs / 2, top: 0, transformOrigin: "50% 100%" }} />
+      <Part {...t} {...(headPose === "front" ? HEAD_FRONT : HEAD_SIDE)} s={s2} className="mc-head"
+            style={{
+              left: cx - hs / 2, top: 0, transformOrigin: "50% 100%",
+              // glance back = mirrored side head; only applied while standing,
+              // where the head-sway animation is off and can't clobber it
+              transform: headPose === "back" ? "scaleX(-1)" : undefined,
+            }} />
+    </div>
+  );
+}
+
+const SPEED = 26; // px/s amble
+
+// One autonomous mob: rAF moves it while walking; a decision timer picks the
+// next action (walk / idle / look at viewer / glance back) at random.
+function Mob({ m, stageRef }) {
+  const elRef = useRef(null);
+  const faceRef = useRef(null);
+  const [pose, setPose] = useState("walk");
+  const poseRef = useRef("walk");
+  useEffect(() => {
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const el = elRef.current, face = faceRef.current;
+    let x = m.home, dir = m.home > 150 ? -1 : 1, raf, timer, alive = true;
+    face.style.transform = `scaleX(${dir})`;
+    let last = performance.now();
+    const step = (t) => {
+      const dt = Math.min((t - last) / 1000, 0.05);
+      last = t;
+      if (poseRef.current === "walk") {
+        const max = Math.max(0, (stageRef.current?.clientWidth ?? 320) - el.offsetWidth);
+        x += dir * SPEED * (m.baby ? 1.2 : 1) * dt;
+        if (x <= 0 || x >= max) { // end of the line: turn around
+          x = Math.min(Math.max(x, 0), max);
+          dir *= -1;
+          face.style.transform = `scaleX(${dir})`;
+        }
+        el.style.transform = `translateX(${x}px)`;
+      }
+      raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    const decide = () => {
+      if (!alive) return;
+      const r = Math.random();
+      const next = r < 0.45 ? "walk" : r < 0.65 ? "idle" : r < 0.85 ? "front" : "back";
+      if (next === "walk" && Math.random() < 0.4) { // sometimes wander off the other way
+        dir *= -1;
+        face.style.transform = `scaleX(${dir})`;
+      }
+      poseRef.current = next;
+      setPose(next);
+      timer = setTimeout(decide, 1200 + Math.random() * 2800);
+    };
+    timer = setTimeout(decide, 600 + Math.random() * 2400);
+    return () => { alive = false; cancelAnimationFrame(raf); clearTimeout(timer); };
+  }, [m, stageRef]);
+
+  return (
+    <div ref={elRef} className={`mob ${pose === "walk" ? "" : "is-still"}`}
+         style={{ position: "absolute", bottom: 0, left: 0, transform: `translateX(${m.home}px)` }}>
+      <div ref={faceRef} style={{ transition: "transform .2s" }}>
+        <SkeletonBody src={m.src} s={m.s} headScale={m.headScale}
+                      headPose={pose === "front" || pose === "back" ? pose : "side"} />
+      </div>
     </div>
   );
 }
 
 const MOBS = [
   { cls: "mob-a", src: "/mc/skeleton.png", s: 3, headScale: 1.35, home: 10 },
-  { cls: "mob-w", src: "/mc/wither_skeleton.png", s: 4, headScale: 1.3, home: 80 },
-  { cls: "mob-b", src: "/mc/skeleton.png", s: 3, headScale: 1.35, home: 150 },
-  { cls: "mob-baby", src: "/mc/skeleton.png", s: 2, headScale: 1.5, home: 210, baby: true },
+  { cls: "mob-w", src: "/mc/wither_skeleton.png", s: 4, headScale: 1.3, home: 90 },
+  { cls: "mob-b", src: "/mc/skeleton.png", s: 3, headScale: 1.35, home: 180 },
+  { cls: "mob-baby", src: "/mc/skeleton.png", s: 2, headScale: 1.5, home: 260, baby: true },
 ];
 
 export function DancingSkeletons() {
-  const [dx, setDx] = useState(0);
-  useEffect(() => {
-    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    setDx(110); // amble right, turn, amble back, forever
-    const id = setInterval(() => setDx((d) => (d ? 0 : 110)), 4700);
-    return () => clearInterval(id);
-  }, []);
-  const facing = dx ? 1 : -1; // profile flips to match travel direction
-
+  const stageRef = useRef(null);
   return (
-    <div className="mcstage" aria-hidden="true"
+    <div ref={stageRef} className="mcstage" aria-hidden="true"
          style={{ position: "relative", width: "100%", height: 150 }}>
-      {MOBS.map((m) => (
-        <div key={m.cls} className={`mob ${m.cls}`}
-             style={{
-               position: "absolute", bottom: 0, left: m.home,
-               transform: `translateX(${dx}px)`,
-               transition: "transform 4.5s linear",
-               transitionDelay: m.baby ? ".6s" : "0s", // the runt lags behind
-             }}>
-          <div style={{ transform: `scaleX(${facing})`, transition: "transform .25s" }}>
-            <SkeletonBody src={m.src} s={m.s} headScale={m.headScale} />
-          </div>
-        </div>
-      ))}
+      {MOBS.map((m) => <Mob key={m.cls} m={m} stageRef={stageRef} />)}
       <style>{`
         /* faint glow lifts the thin bones off the dark background */
         .mcstage .mob { filter: drop-shadow(0 0 2px rgba(255,255,255,.16)); }
         /* game walk in profile: smooth cosine; diagonal gait via -half-cycle
            animation-delay (NOT direction:reverse — these keyframes are
            palindromes, so reverse plays the same motion). Near arm + far leg
-           together; near leg + far arm together. Bob = one dip per footfall,
-           two per stride cycle. */
+           together; near leg + far arm together. Bob = one dip per footfall. */
         .mcstage .mc-walkbob { animation: mc-walkbob .375s ease-in-out infinite; }
         .mcstage .mc-head { animation: mc-head 2.4s ease-in-out infinite; }
         .mcstage .mc-limb-arm { animation: mc-swing-arm .75s ease-in-out infinite; }
@@ -115,6 +157,10 @@ export function DancingSkeletons() {
         @keyframes mc-head { 0%,100% { transform: rotate(-3deg) } 50% { transform: rotate(3deg) } }
         @keyframes mc-swing-leg { 0%,100% { transform: rotate(20deg) } 50% { transform: rotate(-20deg) } }
         @keyframes mc-swing-arm { 0%,100% { transform: rotate(14deg) } 50% { transform: rotate(-14deg) } }
+        /* standing still: limbs and head drop to rest pose */
+        .mcstage .is-still .mc-walkbob,
+        .mcstage .is-still .mc-head,
+        .mcstage .is-still [class*="mc-limb"] { animation: none; }
         @media (prefers-reduced-motion: reduce) {
           .mcstage * { animation: none !important; transition: none !important; }
         }
