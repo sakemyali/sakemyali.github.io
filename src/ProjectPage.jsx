@@ -1,7 +1,9 @@
 import { useParams, Link } from "react-router-dom";
-import { motion } from "framer-motion";
-import { ArrowLeft, ExternalLink } from "lucide-react";
+import DitherBackground from "./DitherBackground";
 import { projects } from "./constants/data.jsx";
+
+// Project detail in the list-layout language: mono, dossier typography,
+// bordered demo video (not a hero), dither smoke behind a readability scrim.
 
 function ProjectPage() {
   const { slug } = useParams();
@@ -11,7 +13,7 @@ function ProjectPage() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-[#0a0a0a] text-white font-mono gap-4">
         <p className="text-2xl font-bold">Project not found</p>
-        <Link to="/" className="text-sm text-neutral-400 hover:text-white transition-colors duration-300">
+        <Link to="/" className="text-sm text-neutral-400 hover:text-white transition-colors">
           &larr; Back home
         </Link>
       </div>
@@ -19,100 +21,56 @@ function ProjectPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-white font-mono dot-grid grain-overlay">
-      {/* Radial vignette */}
-      <div className="fixed inset-0 pointer-events-none" style={{
-        background: "radial-gradient(ellipse at center, transparent 0%, #0a0a0a 70%)",
-      }} />
+    <div className="relative min-h-screen bg-[#0a0a0a] text-white font-mono">
+      <DitherBackground />
+      <div className="grain-overlay" />
+      <div
+        className="pointer-events-none fixed inset-y-0 left-1/2 w-full max-w-3xl -translate-x-1/2 z-[1]"
+        style={{
+          background:
+            "linear-gradient(90deg, transparent 0%, rgba(10,10,10,0.85) 12%, rgba(10,10,10,0.85) 88%, transparent 100%)",
+        }}
+      />
 
-      {/* Hero video */}
-      <div className="relative w-full h-[40vh] md:h-[50vh] overflow-hidden">
+      <main className="relative z-10 max-w-2xl mx-auto px-6 py-20">
+        <Link to="/" className="text-[13px] text-neutral-500 hover:text-white transition-colors">
+          ← index
+        </Link>
+
+        <header className="mt-10">
+          <p className="text-[11px] tracking-[0.2em] uppercase text-neutral-500">{project.tech[0]}</p>
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight mt-2">{project.name}</h1>
+          <p className="text-neutral-400 text-[15px] mt-3">{project.tagline}</p>
+        </header>
+
         <video
           src={`/projectvid${project.id}.mp4`}
-          muted
-          loop
-          autoPlay
-          playsInline
-          className="w-full h-full object-cover"
+          muted loop autoPlay playsInline
+          className="w-full rounded-lg border border-white/10 mt-10"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/40 to-transparent" />
 
-        {/* Back button */}
-        <Link
-          to="/"
-          className="absolute top-6 left-6 z-10 flex items-center gap-2 text-sm text-neutral-400 hover:text-white transition-colors duration-300 backdrop-blur-sm bg-black/30 px-3 py-2 rounded-lg border border-white/10"
-        >
-          <ArrowLeft size={16} />
-          Back
-        </Link>
-      </div>
+        <section className="mt-10 text-[14px] text-neutral-300 leading-relaxed">
+          <p>{project.description}</p>
+        </section>
 
-      {/* Content */}
-      <motion.div
-        initial={{ opacity: 0, y: 30, filter: "blur(8px)" }}
-        animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-        transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-        className="max-w-3xl mx-auto px-6 -mt-20 relative z-10 pb-20"
-      >
-        {/* Title & tagline */}
-        <h1 className="text-3xl md:text-4xl font-bold mb-2">{project.name}</h1>
-        <p className="text-neutral-400 text-lg mb-6">{project.tagline}</p>
-
-        {/* Tech tags */}
-        <div className="flex flex-wrap gap-2 mb-8">
-          {project.tech.map((t, i) => (
-            <motion.span
-              key={i}
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.3 + i * 0.08 }}
-              className="px-3 py-1 rounded-full text-xs font-medium bg-white/5 border border-white/10 text-neutral-300 hover:bg-white/10 hover:border-white/20 transition-all duration-300"
-            >
-              {t}
-            </motion.span>
-          ))}
-        </div>
-
-        {/* Description */}
-        <div className="mb-8">
-          <h2 className="text-lg font-semibold text-white/90 mb-3">About</h2>
-          <p className="text-neutral-400 leading-relaxed">{project.description}</p>
-        </div>
-
-        {/* Highlights */}
         {project.highlights && (
-          <div className="mb-8">
-            <h2 className="text-lg font-semibold text-white/90 mb-3">Highlights</h2>
+          <section className="mt-8">
+            <h2 className="text-[11px] tracking-[0.2em] uppercase text-neutral-500 mb-3">Highlights</h2>
             <ul className="space-y-2">
-              {project.highlights.map((h, i) => (
-                <motion.li
-                  key={i}
-                  initial={{ opacity: 0, x: -10, filter: "blur(4px)" }}
-                  animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
-                  transition={{ delay: 0.4 + i * 0.1 }}
-                  className="flex items-center gap-3 text-neutral-400"
-                >
-                  <span className="w-1.5 h-1.5 rounded-full bg-white/40 flex-shrink-0" />
-                  {h}
-                </motion.li>
+              {project.highlights.map((h) => (
+                <li key={h} className="text-[14px] text-neutral-400 flex gap-3">
+                  <span className="text-neutral-600">—</span>{h}
+                </li>
               ))}
             </ul>
-          </div>
+          </section>
         )}
 
-        {/* GitHub link */}
-        <motion.a
-          href={project.link}
-          target="_blank"
-          rel="noopener noreferrer"
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/20 transition-all duration-300 text-sm font-medium"
-        >
-          <ExternalLink size={16} />
-          View on GitHub
-        </motion.a>
-      </motion.div>
+        <a href={project.link} target="_blank" rel="noopener noreferrer"
+           className="inline-block mt-10 text-[14px] text-neutral-300 hover:text-white underline underline-offset-4 decoration-white/20 hover:decoration-white/60">
+          View on GitHub ↗
+        </a>
+      </main>
     </div>
   );
 }

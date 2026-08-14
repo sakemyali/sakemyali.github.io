@@ -183,7 +183,11 @@ export default function DitherBackground() {
     let nextRipple = 0;
     const click = { x: -9999, y: -9999, down: false, hold: 0 };
     const setPos = (e) => { click.x = e.clientX; click.y = cv.height - e.clientY; };
-    const onDown = (e) => { setPos(e); click.down = true; };
+    const onDown = (e) => {
+      // don't stir/ripple when clicking something interactive (links, buttons…)
+      if (e.target.closest?.('a, button, input, textarea, select, [role="button"]')) return;
+      setPos(e); click.down = true;
+    };
     const onMove = (e) => { if (click.down) setPos(e); };
     const onUp = () => {
       if (!click.down) return;
