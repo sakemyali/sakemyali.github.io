@@ -31,6 +31,9 @@ const HEAD_SIDE = { x: 0, y: 8, w: 8, h: 8 };
 const BODY_SIDE = { x: 16, y: 20, w: 4, h: 12 };
 const ARM_SIDE = { x: 40, y: 18, w: 2, h: 12 };
 const LEG_SIDE = { x: 0, y: 18, w: 2, h: 12 };
+// the spine is a full-height column on the body's BACK face (cols 3-4);
+// in-game it shows through the side face's transparent rib gaps
+const SPINE = { x: 35, y: 20, w: 2, h: 12 };
 
 // Chibi build: the head renders at s*headScale while the body stays at s.
 function SkeletonBody({ src, s, headScale = 1.35 }) {
@@ -43,11 +46,13 @@ function SkeletonBody({ src, s, headScale = 1.35 }) {
   const dim = { filter: "brightness(.55)" };
   return (
     <div className="mc-walkbob" style={{ position: "relative", width: W, height: H }}>
-      {/* far limbs first, dimmed, counter-phased to the near ones */}
+      {/* far limbs first: dimmed, a texel behind the near ones, counter-phased */}
       <Part {...t} {...ARM_SIDE} s={s} className="mc-limb-far-arm"
-            style={{ left: cx - s, top: hs, transformOrigin: "50% 0", ...dim }} />
+            style={{ left: cx - 2 * s, top: hs, transformOrigin: "50% 0", ...dim }} />
       <Part {...t} {...LEG_SIDE} s={s} className="mc-limb-far-leg"
-            style={{ left: cx - s, top: hs + 10 * s, transformOrigin: "50% 0", ...dim }} />
+            style={{ left: cx - 2 * s, top: hs + 10 * s, transformOrigin: "50% 0", ...dim }} />
+      {/* spine at the back edge, showing through the rib gaps like in-game */}
+      <Part {...t} {...SPINE} s={s} style={{ left: cx - 2 * s, top: hs }} />
       <Part {...t} {...BODY_SIDE} s={s} style={{ left: cx - 2 * s, top: hs }} />
       <Part {...t} {...LEG_SIDE} s={s} className="mc-limb-leg"
             style={{ left: cx - s, top: hs + 10 * s, transformOrigin: "50% 0" }} />
@@ -105,8 +110,8 @@ export function DancingSkeletons() {
         .mcstage .mc-limb-far-leg { animation: mc-swing-leg .75s ease-in-out infinite; }
         @keyframes mc-walkbob { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-2px) } }
         @keyframes mc-head { 0%,100% { transform: rotate(-3deg) } 50% { transform: rotate(3deg) } }
-        @keyframes mc-swing-leg { 0%,100% { transform: rotate(18deg) } 50% { transform: rotate(-18deg) } }
-        @keyframes mc-swing-arm { 0%,100% { transform: rotate(12deg) } 50% { transform: rotate(-12deg) } }
+        @keyframes mc-swing-leg { 0%,100% { transform: rotate(20deg) } 50% { transform: rotate(-20deg) } }
+        @keyframes mc-swing-arm { 0%,100% { transform: rotate(14deg) } 50% { transform: rotate(-14deg) } }
         @media (prefers-reduced-motion: reduce) {
           .mcstage * { animation: none !important; transition: none !important; }
         }
