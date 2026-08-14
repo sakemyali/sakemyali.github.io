@@ -104,9 +104,21 @@ export const socialLinks = [
 
 export const experiences = [
   {
-    title: "Backend & ML Engineer (Freelance)",
-    company: "East Capital",
-    period: "2026 — Present",
+    title: "AI/ML Engineer Intern",
+    company: "Dassault Systèmes",
+    period: "Aug 2026 — Present",
+    desc: "AI/ML engineering internship in Tokyo.",
+  },
+  {
+    title: "Incoming Summer Intern",
+    company: "Morgan Stanley",
+    period: "Aug 2026 — Present",
+    desc: "Institutional Equity Division — Sales & Trading, Tokyo.",
+  },
+  {
+    title: "Backend/ML Engineer (Freelance)",
+    company: "Stealth AI Startup",
+    period: "May 2026 — Present",
     desc: "Built data-acquisition pipelines — web scrapers across Japanese rental platforms with regional filtering, exposed via a RESTful API — and a property-price prediction model trained on multi-source Japanese market data.",
   },
   {
@@ -116,16 +128,10 @@ export const experiences = [
     desc: "Built a customer-facing RAG system with LangGraph, combining hybrid vector search with knowledge-graph traversal. Lifted answer accuracy ~20% via automated evaluation and cut database query overhead ~70%. Delivered as a Dockerized service.",
   },
   {
-    title: "Full Stack Engineering Intern",
-    company: "Tokyo ICT (JICA)",
-    period: "Jul 2023 — Oct 2023",
+    title: "Full Stack Engineer Intern",
+    company: "TOKYO-ICT (JICA affiliate)",
+    period: "Jul 2023 — Sep 2023",
     desc: "Developed a multilingual speech conversion system using Azure Cognitive Services. Built scalable backend services with Django, Node.js, and PostgreSQL, reducing runtime by 30%.",
-  },
-  {
-    title: "Junior Developer Intern",
-    company: "Brando SARL",
-    period: "Nov 2022 — Feb 2023",
-    desc: "Developed responsive web applications using JavaScript and RESTful APIs. Collaborated using Agile methodologies and Git to deliver client-focused solutions within tight deadlines.",
   },
 ];
 
