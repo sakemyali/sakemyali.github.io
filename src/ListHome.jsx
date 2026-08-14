@@ -204,13 +204,23 @@ export default function ListHome() {
           <section id="about" className="scroll-mt-24">
             <MobileHead>About</MobileHead>
             <div className="text-[14px] text-neutral-300 leading-relaxed space-y-4">
-              <p>{personalInfo.bio}</p>
               <p>
-                {personalInfo.roles.join(" · ")}. I care about systems that hold up
-                under pressure — secure by design, measured before optimized.
+                I'm a backend &amp; ML engineer in Tokyo with a cybersecurity
+                foundation — 1st Class Honours in Cyber Security, ranked 1st in
+                42 Tokyo's entrance Piscine. I'm as comfortable in C and systems
+                programming as in the cloud layer above it.
+              </p>
+              <p>
+                Right now I'm doing AI/ML engineering at Dassault Systèmes,
+                joining Morgan Stanley's Institutional Equity Division, and
+                building retrieval systems for a stealth AI startup — most
+                recently a production RAG service that lifted answer accuracy
+                ~20% and cut query overhead ~70%.
               </p>
               <p className="text-neutral-500">
-                {languages.map((l) => l.name).join(" / ")}
+                Security shapes how I build: threat-first design, measured
+                before optimized. I work in four languages —{" "}
+                {languages.map((l) => l.name).join(", ")}.
               </p>
             </div>
           </section>

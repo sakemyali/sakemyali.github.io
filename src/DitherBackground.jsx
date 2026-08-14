@@ -22,12 +22,14 @@ out vec4 fragColor;
 uniform vec2 resolution;
 uniform float time;
 uniform float waveSpeed, waveFrequency, waveAmplitude, pixelSize, colorNum;
+uniform vec2 wind;               // ambient drift (uv units/sec, +x = right)
 uniform vec3 waveColor;
-uniform vec2 holdPos;            // pointer in gl_FragCoord space (bottom-up px)
-uniform float hold;              // 1 while the pointer is held down, eased
-const int NR = 4;                // ripple pool — each finishes independently
-uniform vec2 ripplePos[NR];
-uniform float rippleAge[NR];     // seconds since that ripple's release
+// typhoon vortices: accumulated twist never unwinds; released ones coast on
+// momentum. Positions in gl_FragCoord space (bottom-up px).
+const int NV = 6;
+uniform vec2 vortexPos[NV];
+uniform float vortexAngle[NV];   // accumulated rotation (radians, uncapped)
+uniform float vortexPull[NV];    // inward suction strength
 
 vec4 mod289(vec4 x){ return x - floor(x*(1.0/289.0))*289.0; }
 vec4 permute(vec4 x){ return mod289(((x*34.0)+1.0)*x); }
@@ -63,7 +65,11 @@ float fbm(vec2 p){
   for(int i=0;i<OCTAVES;i++){ value += amp*abs(cnoise(p)); p*=freq; amp*=waveAmplitude; }
   return value;
 }
-float pattern(vec2 p){ vec2 p2 = p - time*waveSpeed; return fbm(p + fbm(p2)); }
+float pattern(vec2 p){
+  p -= wind * time;                       // everything rides the wind
+  vec2 p2 = p - time * waveSpeed;         // plus slow internal churn
+  return fbm(p + fbm(p2));
+}
 
 const float bayer[64] = float[64](
    0.0/64.0,48.0/64.0,12.0/64.0,60.0/64.0, 3.0/64.0,51.0/64.0,15.0/64.0,63.0/64.0,
@@ -91,33 +97,18 @@ void main(){
   vec2 uv = (block*pixelSize)/resolution - 0.5;
   uv.x *= aspect;
 
-  // hold = sustained stir at the pointer
-  {
-    vec2 m = holdPos/resolution - 0.5;
+  // typhoons: each vortex applies its accumulated twist; the angle only ever
+  // grows, so nothing snaps back — released vortices keep coasting
+  for (int i = 0; i < NV; i++) {
+    vec2 m = vortexPos[i]/resolution - 0.5;
     m.x *= aspect;
     vec2 diff = uv - m;
     float d = length(diff);
-    float e = smoothstep(0.30, 0.0, d) * hold;
-    float ang = e * 3.0;
+    float e = smoothstep(0.22, 0.0, d);   // small whirlpool
+    float ang = e * vortexAngle[i];
     float s = sin(ang), c = cos(ang);
-    uv = m + mat2(c, -s, s, c) * diff;
-    uv += (d > 1e-4 ? diff / d : vec2(0.0)) * e * 0.10;
-  }
-  // release = expanding ripples; each runs to completion independently
-  for (int i = 0; i < NR; i++) {
-    vec2 m = ripplePos[i]/resolution - 0.5;
-    m.x *= aspect;
-    vec2 diff = uv - m;
-    float d = length(diff);
-    float amp = exp(-3.2 * rippleAge[i]);            // fades ~0.8s
-    float ringR = rippleAge[i] * 0.55;               // expands outward
-    // crossfade with the hold stir: ripple grows in as the stir eases out,
-    // so releasing hands off smoothly instead of stacking both at once
-    float e = exp(-35.0 * (d - ringR) * (d - ringR)) * amp * (1.0 - hold);
-    float ang = e * 3.0;
-    float s = sin(ang), c = cos(ang);
-    uv = m + mat2(c, -s, s, c) * diff;
-    uv += (d > 1e-4 ? diff / d : vec2(0.0)) * e * 0.10;
+    // rotate and sample outward -> the smoke appears sucked inward in a spiral
+    uv = m + mat2(c, -s, s, c) * (diff * (1.0 + e * vortexPull[i]));
   }
 
   float f = pattern(uv);
@@ -171,30 +162,41 @@ export default function DitherBackground() {
     gl.uniform1f(U("colorNum"), CFG.colorNum);
     const uTime = U("time");
     const uRes = U("resolution");
-    const uHoldPos = U("holdPos");
-    const uHold = U("hold");
-    const uRipplePos = U("ripplePos");
-    const uRippleAge = U("rippleAge");
+    const uVortexPos = U("vortexPos");
+    const uVortexAngle = U("vortexAngle");
+    const uVortexPull = U("vortexPull");
+    const WIND = 0.045; // uv units/sec, rightward — shared by smoke and drift
+    gl.uniform2f(U("wind"), WIND, 0.0);
 
-    // hold to stir (follows the pointer while down); each release spawns an
-    // independent ripple from a small pool so overlapping clicks don't teleport
-    const NR = 4;
-    const ripples = Array.from({ length: NR }, () => ({ x: -9999, y: -9999, t: -1e9 }));
-    let nextRipple = 0;
-    const click = { x: -9999, y: -9999, down: false, hold: 0 };
-    const setPos = (e) => { click.x = e.clientX; click.y = cv.height - e.clientY; };
+    // vortex pool: hold spins one up (no cap); release lets it coast on
+    // momentum — angle only ever grows, so the twist never unwinds
+    const NV = 6;
+    const vortices = Array.from({ length: NV }, () =>
+      ({ x: -9999, y: -9999, tx: -9999, ty: -9999, A: 0, w: 0, pull: 0, amp: 0 }));
+    let cur = -1; // index of the vortex being held, -1 = none
     const onDown = (e) => {
-      // don't stir/ripple when clicking something interactive (links, buttons…)
+      // ignore clicks on interactive elements (links, buttons…)
       if (e.target.closest?.('a, button, input, textarea, select, [role="button"]')) return;
-      setPos(e); click.down = true;
+      const px = e.clientX, py = cv.height - e.clientY;
+      // every click starts a fresh whirlpool — released patches are frozen
+      // material riding the wind, never re-grabbed. Recycle a free slot,
+      // or the one furthest downwind (closest to leaving the screen).
+      let best = 0;
+      for (let i = 1; i < NV; i++) {
+        const a = vortices[i], b = vortices[best];
+        if (a.amp < b.amp - 0.01 || (Math.abs(a.amp - b.amp) <= 0.01 && a.x > b.x)) best = i;
+      }
+      cur = best;
+      const v = vortices[cur];
+      v.x = v.tx = px; v.y = v.ty = py;
+      v.A = 0.8; v.w = 0.9; v.pull = 0.15; v.amp = 0; // small, slow, eases in
     };
-    const onMove = (e) => { if (click.down) setPos(e); };
-    const onUp = () => {
-      if (!click.down) return;
-      click.down = false;
-      const r = ripples[nextRipple++ % NR];
-      r.x = click.x; r.y = click.y; r.t = performance.now();
+    const onMove = (e) => {
+      if (cur < 0) return;
+      const v = vortices[cur];
+      v.tx = e.clientX; v.ty = cv.height - e.clientY;
     };
+    const onUp = () => { cur = -1; };
     window.addEventListener("pointerdown", onDown);
     window.addEventListener("pointermove", onMove);
     window.addEventListener("pointerup", onUp);
@@ -212,19 +214,37 @@ export default function DitherBackground() {
     const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
     let raf;
     const t0 = performance.now();
-    const posArr = new Float32Array(NR * 2);
-    const ageArr = new Float32Array(NR);
+    const posArr = new Float32Array(NV * 2);
+    const angArr = new Float32Array(NV);
+    const pullArr = new Float32Array(NV);
+    let lastT = performance.now();
     const draw = (t) => {
-      click.hold += ((click.down ? 1 : 0) - click.hold) * 0.12; // ease in/out
       const now = performance.now();
-      for (let i = 0; i < NR; i++) {
-        posArr[i * 2] = ripples[i].x; posArr[i * 2 + 1] = ripples[i].y;
-        ageArr[i] = (now - ripples[i].t) / 1000;
+      const dt = Math.min((now - lastT) / 1000, 0.05);
+      lastT = now;
+      for (let i = 0; i < NV; i++) {
+        const v = vortices[i];
+        if (i === cur) {
+          v.w += 0.12 * dt;                     // slow intensification — endless but gentle
+          v.pull = Math.min(v.pull + 0.2 * dt, 0.5);
+          v.amp += (1 - v.amp) * Math.min(1, 6 * dt);  // ease in — no pop on press
+          v.x += (v.tx - v.x) * Math.min(1, 10 * dt);  // glide toward the pointer
+          v.y += (v.ty - v.y) * Math.min(1, 10 * dt);
+          v.A += v.w * dt;                      // winding only happens while held
+        } else if (v.amp > 0.01) {
+          // released: spin stops dead, twist stays frozen exactly as left —
+          // no decay, no unwinding. The patch just rides the wind off-screen.
+          v.w = 0;
+          v.x += WIND * cv.height * dt;         // same speed as the smoke around it
+          v.tx = v.x; v.ty = v.y;
+          if (v.x - cv.width > 0.25 * cv.height) v.amp = 0; // free the slot once out of view
+        }
+        posArr[i * 2] = v.x; posArr[i * 2 + 1] = v.y;
+        angArr[i] = v.A * v.amp; pullArr[i] = v.pull * v.amp;
       }
-      gl.uniform2f(uHoldPos, click.x, click.y);
-      gl.uniform1f(uHold, click.hold);
-      gl.uniform2fv(uRipplePos, posArr);
-      gl.uniform1fv(uRippleAge, ageArr);
+      gl.uniform2fv(uVortexPos, posArr);
+      gl.uniform1fv(uVortexAngle, angArr);
+      gl.uniform1fv(uVortexPull, pullArr);
       gl.uniform1f(uTime, t);
       gl.drawArrays(gl.TRIANGLES, 0, 3);
     };
