@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { FileText } from "lucide-react";
 import DitherBackground from "./DitherBackground";
+import { DancingSkeletons, WitherHead } from "./PixelMobs";
 import {
   personalInfo,
   experiences,
@@ -172,7 +173,7 @@ export default function ListHome() {
                       active === s.id ? "text-white" : "text-neutral-500 group-hover:text-neutral-200"
                     }`}
                   >
-                    {s.label}
+                    {s.id === "about" ? <WitherHead px={2} /> : s.label}
                   </span>
                 </a>
               ))}
@@ -202,7 +203,10 @@ export default function ListHome() {
         {/* ── right column: scrolling content ── */}
         <main className="lg:w-[58%] lg:py-24 pb-24">
           <section id="about" className="scroll-mt-24">
-            <MobileHead>About</MobileHead>
+            <div className="mb-8">
+              <DancingSkeletons />
+            </div>
+            <MobileHead><WitherHead px={2} /></MobileHead>
             <div className="text-[14px] text-neutral-300 leading-relaxed space-y-4">
               <p>
                 I'm a backend &amp; ML engineer in Tokyo with a cybersecurity
