@@ -81,7 +81,7 @@ const MOBS = [
   { cls: "mob-a", src: "/mc/skeleton.png", s: 3, headScale: 1.35, home: 0 },
   { cls: "mob-w", src: "/mc/wither_skeleton.png", s: 4, headScale: 1.3, home: 70 },
   { cls: "mob-b", src: "/mc/skeleton.png", s: 3, headScale: 1.35, home: 150 },
-  { cls: "mob-baby", src: "/mc/skeleton.png", s: 2, headScale: 1.6, home: 215, baby: true },
+  { cls: "mob-baby", src: "/mc/skeleton.png", s: 2, headScale: 1.5, home: 215, baby: true },
 ];
 
 const SCENES = ["dance", "walk", "fight"];
@@ -137,8 +137,10 @@ export function DancingSkeletons() {
         .mcstage .mc-leg-r { animation: mc-step 1.2s ease-in-out infinite reverse; }
         @keyframes mc-bob { 0%,100% { transform: translateY(0) scaleY(1) } 35% { transform: translateY(-3px) scaleY(1.04) } 70% { transform: translateY(1px) scaleY(.96) } }
         @keyframes mc-head { 0%,100% { transform: rotate(-8deg) } 50% { transform: rotate(8deg) } }
-        @keyframes mc-arm-l { 0%,100% { transform: rotate(160deg) } 50% { transform: rotate(200deg) } }
-        @keyframes mc-arm-r { 0%,100% { transform: rotate(-160deg) } 50% { transform: rotate(-200deg) } }
+        /* wave caps at ~168deg: past vertical the arm sweeps inward through
+           the (oversized chibi) head box */
+        @keyframes mc-arm-l { 0%,100% { transform: rotate(132deg) } 50% { transform: rotate(168deg) } }
+        @keyframes mc-arm-r { 0%,100% { transform: rotate(-132deg) } 50% { transform: rotate(-168deg) } }
         @keyframes mc-step { 0%,100% { transform: rotate(-6deg) } 50% { transform: rotate(6deg) } }
 
         /* patrol: arms drop and swing, legs stride, no bounce */
