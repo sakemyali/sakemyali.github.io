@@ -97,18 +97,27 @@ export function DancingSkeletons() {
           </div>
         </div>
       ))}
+      {/* ground line so the walk has something to stand on */}
+      <div style={{
+        position: "absolute", left: 0, right: 0, bottom: -1, height: 1,
+        background: "rgba(255,255,255,.12)",
+        boxShadow: "0 1px 6px rgba(255,255,255,.06)",
+      }} />
       <style>{`
         /* faint glow lifts the thin bones off the dark background */
         .mcstage .mob { filter: drop-shadow(0 0 2px rgba(255,255,255,.16)); }
-        /* game walk in profile: smooth cosine, legs +-40deg, arms +-28deg,
-           arms counter-phased to same-side legs, small bob per footfall */
-        .mcstage .mc-walkbob { animation: mc-walkbob .45s ease-in-out infinite; }
+        /* game walk in profile: smooth cosine; diagonal gait via -half-cycle
+           animation-delay (NOT direction:reverse — these keyframes are
+           palindromes, so reverse plays the same motion). Near arm + far leg
+           together; near leg + far arm together. Bob = one dip per footfall,
+           two per stride cycle. */
+        .mcstage .mc-walkbob { animation: mc-walkbob .375s ease-in-out infinite; }
         .mcstage .mc-head { animation: mc-head 2.4s ease-in-out infinite; }
         .mcstage .mc-limb-arm { animation: mc-swing-arm .75s ease-in-out infinite; }
-        .mcstage .mc-limb-far-arm { animation: mc-swing-arm .75s ease-in-out infinite reverse; }
-        .mcstage .mc-limb-leg { animation: mc-swing-leg .75s ease-in-out infinite reverse; }
+        .mcstage .mc-limb-far-arm { animation: mc-swing-arm .75s ease-in-out infinite; animation-delay: -.375s; }
+        .mcstage .mc-limb-leg { animation: mc-swing-leg .75s ease-in-out infinite; animation-delay: -.375s; }
         .mcstage .mc-limb-far-leg { animation: mc-swing-leg .75s ease-in-out infinite; }
-        @keyframes mc-walkbob { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-2px) } }
+        @keyframes mc-walkbob { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-1.5px) } }
         @keyframes mc-head { 0%,100% { transform: rotate(-3deg) } 50% { transform: rotate(3deg) } }
         @keyframes mc-swing-leg { 0%,100% { transform: rotate(20deg) } 50% { transform: rotate(-20deg) } }
         @keyframes mc-swing-arm { 0%,100% { transform: rotate(14deg) } 50% { transform: rotate(-14deg) } }
