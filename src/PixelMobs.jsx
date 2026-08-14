@@ -87,8 +87,9 @@ const MOBS = [
 const SCENES = ["dance", "walk", "fight"];
 
 export function DancingSkeletons() {
-  // one random scene per page load, looped forever
-  const [scene] = useState(() => SCENES[Math.floor(Math.random() * SCENES.length)]);
+  // one random scene per page load, looped forever (?mob=dance|walk|fight forces one)
+  const [scene] = useState(() =>
+    new URLSearchParams(location.search).get("mob") || SCENES[Math.floor(Math.random() * SCENES.length)]);
   const [dx, setDx] = useState(0);
   useEffect(() => {
     if (scene !== "walk" || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -154,11 +155,13 @@ export function DancingSkeletons() {
         .ph-fight .mob-b .mc-arm-l { animation: none; }
         .ph-fight .mob-a .mc-arm-r { transform: rotate(-90deg); }
         .ph-fight .mob-b .mc-arm-l { transform: rotate(90deg); }
-        .ph-fight .mob-a .mc-hurtwrap { animation: mc-hurt-a 5.5s linear infinite; }
-        .ph-fight .mob-b .mc-hurtwrap { animation: mc-hurt-b 5.5s linear infinite; }
+        /* hurt flash lives on .mob (outside the 3D chain): animating filter on
+           an element inside it forces transform-style flat and squashes the 3D */
+        .ph-fight .mob-a { animation: mc-hurt-a 5.5s linear infinite; }
+        .ph-fight .mob-b { animation: mc-hurt-b 5.5s linear infinite; }
         .ph-fight .mob-w .mc-hurtwrap { transform: translateY(14px) scaleY(.88); }
-        @keyframes mc-hurt-b { 0%,39% { filter: none; transform: none } 41%,52% { filter: sepia(1) saturate(7) hue-rotate(-55deg) brightness(1.1); transform: translateX(9px) } 56%,100% { filter: none; transform: none } }
-        @keyframes mc-hurt-a { 0%,61% { filter: none; transform: none } 63%,74% { filter: sepia(1) saturate(7) hue-rotate(-55deg) brightness(1.1); transform: translateX(-9px) } 78%,100% { filter: none; transform: none } }
+        @keyframes mc-hurt-b { 0%,39% { filter: drop-shadow(0 0 2px rgba(255,255,255,.16)); transform: none } 41%,52% { filter: sepia(1) saturate(7) hue-rotate(-55deg) brightness(1.1); transform: translateX(9px) } 56%,100% { filter: drop-shadow(0 0 2px rgba(255,255,255,.16)); transform: none } }
+        @keyframes mc-hurt-a { 0%,61% { filter: drop-shadow(0 0 2px rgba(255,255,255,.16)); transform: none } 63%,74% { filter: sepia(1) saturate(7) hue-rotate(-55deg) brightness(1.1); transform: translateX(-9px) } 78%,100% { filter: drop-shadow(0 0 2px rgba(255,255,255,.16)); transform: none } }
         .mc-arrow { position: absolute; width: 12px; height: 3px; background: #cfcfcf; bottom: 64px; opacity: 0; }
         .ph-fight .mc-arrow-1 { left: 34px; animation: mc-fly1 5.5s linear infinite; }
         .ph-fight .mc-arrow-2 { left: 160px; animation: mc-fly2 5.5s linear infinite; }
