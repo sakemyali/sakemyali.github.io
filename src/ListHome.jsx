@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { FileText } from "lucide-react";
 import DitherBackground from "./DitherBackground";
@@ -79,6 +79,7 @@ function ExpandRow({ p, open, onToggle }) {
   // video src attaches on open but only detaches after the collapse finishes,
   // so the video doesn't blank out mid-animation
   const [vidSrc, setVidSrc] = useState(null);
+  const innerRef = useRef(null);
   useEffect(() => {
     if (open) setVidSrc(`/projectvid${p.id}.mp4`);
   }, [open, p.id]);
@@ -99,14 +100,17 @@ function ExpandRow({ p, open, onToggle }) {
             </span>
           </span>
           <p className="text-[13px] text-neutral-400 leading-relaxed mt-1.5">{p.tagline}</p>
-          {/* 0fr -> 1fr grid row animates open/closed without measuring heights */}
+          {/* measured-height slide: Safari won't interpolate grid rows to 0fr */}
           <div style={{
-                 display: "grid",
-                 gridTemplateRows: open ? "1fr" : "0fr",
-                 transition: "grid-template-rows .45s cubic-bezier(.4,0,.2,1)",
+                 height: open ? innerRef.current?.scrollHeight ?? "auto" : 0,
+                 overflow: "hidden",
+                 transition: "height .45s cubic-bezier(.4,0,.2,1)",
                }}
-               onTransitionEnd={() => { if (!open) setVidSrc(null); }}>
-            <div style={{ overflow: "hidden" }} onClick={(e) => e.stopPropagation()}>
+               onTransitionEnd={(e) => {
+                 // ignore bubbled transitionends from the content fade
+                 if (e.target === e.currentTarget && !open) setVidSrc(null);
+               }}>
+            <div ref={innerRef} onClick={(e) => e.stopPropagation()}>
               <div className={`mt-4 space-y-4 pb-1 transition-opacity duration-300 ${open ? "opacity-100 delay-150" : "opacity-0"}`}>
                 <video
                   src={vidSrc || undefined}
