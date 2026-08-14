@@ -110,12 +110,12 @@ function Mob({ m, stageRef }) {
       const next = r < 0.45 ? "walk" : r < 0.65 ? "idle" : r < 0.85 ? "front" : "back";
       if (next === "walk") {
         spd = SPEED * (0.8 + Math.random() * 0.5);
-        if (Math.random() < 0.55) turn(); // often wander off the other way
+        if (Math.random() < 0.2) turn(); // occasionally wander off the other way
       }
       go(next);
-      timer = setTimeout(decide, 900 + Math.random() * 2200);
+      timer = setTimeout(decide, 2200 + Math.random() * 3800);
     };
-    timer = setTimeout(decide, 500 + Math.random() * 1800);
+    timer = setTimeout(decide, 1000 + Math.random() * 3000);
     return () => { alive = false; cancelAnimationFrame(raf); clearTimeout(timer); clearTimeout(pauseTimer); };
   }, [m, stageRef]);
 
