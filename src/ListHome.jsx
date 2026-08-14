@@ -203,7 +203,7 @@ export default function ListHome() {
         {/* ── right column: scrolling content ── */}
         <main className="lg:w-[58%] lg:py-24 pb-24">
           <section id="about" className="scroll-mt-24">
-            <div className="mb-8">
+            <div className="mb-2">
               <DancingSkeletons />
             </div>
             <MobileHead><WitherHead px={2} /></MobileHead>

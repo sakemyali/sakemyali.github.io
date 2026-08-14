@@ -83,7 +83,7 @@ export function DancingSkeletons() {
 
   return (
     <div className="mcstage" aria-hidden="true"
-         style={{ position: "relative", width: 360, height: 150 }}>
+         style={{ position: "relative", width: "100%", height: 150 }}>
       {MOBS.map((m) => (
         <div key={m.cls} className={`mob ${m.cls}`}
              style={{
