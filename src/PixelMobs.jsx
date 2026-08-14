@@ -97,12 +97,6 @@ export function DancingSkeletons() {
           </div>
         </div>
       ))}
-      {/* ground line so the walk has something to stand on */}
-      <div style={{
-        position: "absolute", left: 0, right: 0, bottom: -1, height: 1,
-        background: "rgba(255,255,255,.12)",
-        boxShadow: "0 1px 6px rgba(255,255,255,.06)",
-      }} />
       <style>{`
         /* faint glow lifts the thin bones off the dark background */
         .mcstage .mob { filter: drop-shadow(0 0 2px rgba(255,255,255,.16)); }
