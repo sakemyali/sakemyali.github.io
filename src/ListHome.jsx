@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { FileText } from "lucide-react";
 import DitherBackground from "./DitherBackground";
@@ -76,6 +76,13 @@ const MobileHead = ({ children }) => (
 
 // Expandable project row (variant "expand"): unfolds video + highlights inline.
 function ExpandRow({ p, open, onToggle }) {
+  // video src attaches on open but only detaches after the collapse finishes,
+  // so the video doesn't blank out mid-animation
+  const [vidSrc, setVidSrc] = useState(null);
+  const innerRef = useRef(null);
+  useEffect(() => {
+    if (open) setVidSrc(`/projectvid${p.id}.mp4`);
+  }, [open, p.id]);
   return (
     <div className="group/row block cursor-pointer" onClick={onToggle} role="button">
       <div className={`grid grid-cols-[100px_1fr] gap-5 py-4 px-4 -mx-4 rounded-lg border
@@ -93,35 +100,48 @@ function ExpandRow({ p, open, onToggle }) {
             </span>
           </span>
           <p className="text-[13px] text-neutral-400 leading-relaxed mt-1.5">{p.tagline}</p>
-          {open && (
-            <div className="mt-4 space-y-4" onClick={(e) => e.stopPropagation()}>
-              <video
-                src={`/projectvid${p.id}.mp4`}
-                muted loop autoPlay playsInline
-                className="w-full max-w-md rounded-lg border border-white/10"
-              />
-              <p className="text-[13px] text-neutral-400 leading-relaxed">{p.description}</p>
-              {p.highlights && (
-                <ul className="space-y-1.5">
-                  {p.highlights.map((h) => (
-                    <li key={h} className="text-[13px] text-neutral-400 flex gap-2.5">
-                      <span className="text-neutral-600">—</span>{h}
-                    </li>
-                  ))}
-                </ul>
-              )}
-              <div className="flex gap-6">
-                <Link to={`/project/${p.slug}`}
-                      className="text-[13px] text-neutral-300 hover:text-white underline underline-offset-4 decoration-white/20 hover:decoration-white/60">
-                  See more →
-                </Link>
-                <a href={p.link} target="_blank" rel="noreferrer"
-                   className="text-[13px] text-neutral-300 hover:text-white underline underline-offset-4 decoration-white/20 hover:decoration-white/60">
-                  GitHub ↗
-                </a>
+          {/* measured-height slide: Safari won't interpolate grid rows to 0fr */}
+          <div style={{
+                 height: open ? innerRef.current?.scrollHeight ?? "auto" : 0,
+                 overflow: "hidden",
+                 transition: "height .45s cubic-bezier(.4,0,.2,1)",
+               }}
+               onTransitionEnd={(e) => {
+                 // ignore bubbled transitionends from the content fade
+                 if (e.target === e.currentTarget && !open) setVidSrc(null);
+               }}>
+            <div ref={innerRef} onClick={(e) => e.stopPropagation()}>
+              {/* pt-4 not mt-4: margins don't count in scrollHeight, which
+                  clipped the bottom links by exactly the margin */}
+              <div className={`pt-4 space-y-4 pb-1 transition-opacity duration-300 ${open ? "opacity-100 delay-150" : "opacity-0"}`}>
+                <video
+                  src={vidSrc || undefined}
+                  muted loop autoPlay playsInline
+                  className="w-full max-w-md aspect-video object-cover rounded-lg border border-white/10"
+                />
+                <p className="text-[13px] text-neutral-400 leading-relaxed">{p.description}</p>
+                {p.highlights && (
+                  <ul className="space-y-1.5">
+                    {p.highlights.map((h) => (
+                      <li key={h} className="text-[13px] text-neutral-400 flex gap-2.5">
+                        <span className="text-neutral-600">—</span>{h}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                <div className="flex gap-6">
+                  <Link to={`/project/${p.slug}`}
+                        className="text-[13px] text-neutral-300 hover:text-white underline underline-offset-4 decoration-white/20 hover:decoration-white/60">
+                    See more →
+                  </Link>
+                  <a href={p.link} target="_blank" rel="noreferrer"
+                     className="text-[13px] text-neutral-300 hover:text-white underline underline-offset-4 decoration-white/20 hover:decoration-white/60">
+                    GitHub ↗
+                  </a>
+                </div>
               </div>
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>
