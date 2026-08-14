@@ -111,7 +111,9 @@ function ExpandRow({ p, open, onToggle }) {
                  if (e.target === e.currentTarget && !open) setVidSrc(null);
                }}>
             <div ref={innerRef} onClick={(e) => e.stopPropagation()}>
-              <div className={`mt-4 space-y-4 pb-1 transition-opacity duration-300 ${open ? "opacity-100 delay-150" : "opacity-0"}`}>
+              {/* pt-4 not mt-4: margins don't count in scrollHeight, which
+                  clipped the bottom links by exactly the margin */}
+              <div className={`pt-4 space-y-4 pb-1 transition-opacity duration-300 ${open ? "opacity-100 delay-150" : "opacity-0"}`}>
                 <video
                   src={vidSrc || undefined}
                   muted loop autoPlay playsInline
