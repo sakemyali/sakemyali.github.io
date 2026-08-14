@@ -28,6 +28,9 @@ const A32 = [64, 32];
 // Front-face crops for the skeleton family (slim 2x12x2 limbs)
 const HEAD = { x: 8, y: 8, w: 8, h: 8 };
 const BODY = { x: 20, y: 20, w: 8, h: 12 };
+// the spine lives on the body's BACK face — in-game it shows through the
+// front's transparent rows, so we layer it behind the front crop
+const BODY_BACK = { x: 32, y: 20, w: 8, h: 12 };
 const ARM = { x: 42, y: 18, w: 2, h: 12 };
 const LEG = { x: 2, y: 18, w: 2, h: 12 };
 
@@ -45,6 +48,7 @@ function SkeletonBody({ src, s, headScale = 1.35 }) {
       <Part {...t} {...ARM} s={s} className="mc-arm-r" style={{ left: cx + 4 * s, top: hs, transformOrigin: "50% 0" }} />
       <Part {...t} {...LEG} s={s} className="mc-leg-l" style={{ left: cx - 3 * s, top: hs + 10 * s, transformOrigin: "50% 0" }} />
       <Part {...t} {...LEG} s={s} className="mc-leg-r" style={{ left: cx + 1 * s, top: hs + 10 * s, transformOrigin: "50% 0" }} />
+      <Part {...t} {...BODY_BACK} s={s} style={{ left: cx - 4 * s, top: hs, filter: "brightness(.7)" }} />
       <Part {...t} {...BODY} s={s} style={{ left: cx - 4 * s, top: hs }} />
       <Part {...t} {...HEAD} s={s2} className="mc-head" style={{ left: cx - hs / 2, top: 0, transformOrigin: "50% 100%" }} />
       {/* blush */}
