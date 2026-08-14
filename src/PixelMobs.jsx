@@ -1,7 +1,9 @@
+import { useEffect, useState } from "react";
+
 // Mobs assembled from the official Minecraft entity texture atlases
-// (public/mc/*.png, © Mojang — non-commercial fan use). Each body part is a
-// div cropping its front face out of the atlas via background-position;
-// limbs/head swing with CSS keyframes for the dance.
+// (public/mc/*.png, © Mojang — non-commercial fan use). Each body part crops
+// its front face from the atlas via background-position; a small phase
+// timeline cycles dance → walk → dance → bow duel → walk home.
 
 function Part({ src, atlas, x, y, w, h, s, className, style }) {
   return (
@@ -21,8 +23,6 @@ function Part({ src, atlas, x, y, w, h, s, className, style }) {
   );
 }
 
-// Skeleton-family atlas (64x32) front-face crops. Limbs are the slim 2px
-// boxes: front face sits at (origin + depth) in each box's UV block.
 const A32 = [64, 32];
 const FACES = {
   head: { x: 8, y: 8, w: 8, h: 8 },
@@ -31,48 +31,132 @@ const FACES = {
   leg: { x: 2, y: 18, w: 2, h: 12 },
 };
 
-function Skeleton({ src, s = 4, delay = 0 }) {
-  const d = (extra) => ({ animationDelay: `${delay}s`, ...extra });
+// Chibi build: the head is rendered at s*headScale while the body stays at s.
+function SkeletonBody({ src, s, headScale = 1.6 }) {
+  const s2 = s * headScale;
+  const hs = 8 * s2; // head px size
+  const W = Math.max(12 * s, hs);
+  const H = hs + 24 * s;
+  const cx = W / 2;
   return (
-    <div className="mc-bob" style={{ position: "relative", width: 12 * s, height: 32 * s, animationDelay: `${delay}s` }}>
+    <div className="mc-bob" style={{ position: "relative", width: W, height: H }}>
       <Part src={src} atlas={A32} {...FACES.arm} s={s} className="mc-arm-l"
-            style={d({ left: 0, top: 8 * s, transformOrigin: "50% 0" })} />
+            style={{ left: cx - 6 * s, top: hs, transformOrigin: "50% 0" }} />
       <Part src={src} atlas={A32} {...FACES.arm} s={s} className="mc-arm-r"
-            style={d({ left: 10 * s, top: 8 * s, transformOrigin: "50% 0" })} />
+            style={{ left: cx + 4 * s, top: hs, transformOrigin: "50% 0" }} />
       <Part src={src} atlas={A32} {...FACES.leg} s={s} className="mc-leg-l"
-            style={d({ left: 4 * s, top: 20 * s, transformOrigin: "50% 0" })} />
+            style={{ left: cx - 2 * s, top: hs + 12 * s, transformOrigin: "50% 0" }} />
       <Part src={src} atlas={A32} {...FACES.leg} s={s} className="mc-leg-r"
-            style={d({ left: 6 * s, top: 20 * s, transformOrigin: "50% 0" })} />
+            style={{ left: cx, top: hs + 12 * s, transformOrigin: "50% 0" }} />
       <Part src={src} atlas={A32} {...FACES.body} s={s}
-            style={{ left: 2 * s, top: 8 * s }} />
-      <Part src={src} atlas={A32} {...FACES.head} s={s} className="mc-head"
-            style={d({ left: 2 * s, top: 0, transformOrigin: "50% 100%" })} />
+            style={{ left: cx - 4 * s, top: hs }} />
+      <Part src={src} atlas={A32} {...FACES.head} s={s2} className="mc-head"
+            style={{ left: cx - hs / 2, top: 0, transformOrigin: "50% 100%" }} />
+      {/* blush */}
+      {[cx - hs / 2 + 1 * s2, cx + hs / 2 - 2 * s2].map((left) => (
+        <div key={left} style={{
+          position: "absolute", left, top: 5.2 * s2, width: s2, height: 0.7 * s2,
+          background: "#ff9fb0", opacity: 0.55, borderRadius: "40%", zIndex: 1,
+        }} />
+      ))}
     </div>
   );
 }
 
-// Two skeletons flanking a taller wither skeleton, arms up, swaying —
-// slightly offset delays so it reads as a groove, not a march.
+const MOBS = [
+  { cls: "mob-a", src: "/mc/skeleton.png", s: 3, headScale: 1.6, home: 6 },
+  { cls: "mob-w", src: "/mc/wither_skeleton.png", s: 4, headScale: 1.5, home: 64 },
+  { cls: "mob-b", src: "/mc/skeleton.png", s: 3, headScale: 1.6, home: 140 },
+  { cls: "mob-baby", src: "/mc/skeleton.png", s: 2, headScale: 1.8, home: 200, baby: true },
+];
+
+const TIMELINE = [
+  ["dance", 3600],
+  ["walk", 2600],
+  ["dance", 2600],
+  ["fight", 3200],
+  ["walk-home", 2600],
+];
+
 export function DancingSkeletons() {
+  const [step, setStep] = useState(0);
+  useEffect(() => {
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const id = setTimeout(() => setStep((step + 1) % TIMELINE.length), TIMELINE[step][1]);
+    return () => clearTimeout(id);
+  }, [step]);
+  const phase = TIMELINE[step][0];
+  const mode = phase.startsWith("walk") ? "walk" : phase;
+  const dx = step >= 1 && step <= 3 ? 55 : 0; // group patrols right, then home
+
   return (
-    <div className="flex items-end gap-6" aria-hidden="true">
-      <Skeleton src="/mc/skeleton.png" s={3} />
-      <Skeleton src="/mc/wither_skeleton.png" s={4} delay={0.25} />
-      <Skeleton src="/mc/skeleton.png" s={3} delay={0.5} />
+    <div className={`mcstage ph-${mode}`} aria-hidden="true"
+         style={{ position: "relative", width: 300, height: 152 }}>
+      {MOBS.map((m) => (
+        <div key={m.cls} className={`mob ${m.cls}`}
+             style={{
+               position: "absolute", bottom: 0, left: m.home,
+               transform: `translateX(${dx}px)`,
+               transition: "transform 2.4s linear",
+               transitionDelay: m.baby ? ".4s" : "0s", // the runt lags behind
+             }}>
+          <div className="mc-hurtwrap" style={{ transformOrigin: "50% 100%", transition: "transform .3s" }}>
+            <SkeletonBody src={m.src} s={m.s} headScale={m.headScale} />
+          </div>
+        </div>
+      ))}
+      <div className="mc-arrow mc-arrow-1" />
+      <div className="mc-arrow mc-arrow-2" />
+      {[[26, 0], [96, 0.8], [168, 1.6]].map(([left, delay]) => (
+        <span key={left} className="mc-heart"
+              style={{ left, bottom: 118, animationDelay: `${delay}s` }}>♥</span>
+      ))}
       <style>{`
-        .mc-bob { animation: mc-bob 1s ease-in-out infinite; }
-        .mc-head { animation: mc-head 1s ease-in-out infinite; }
-        .mc-arm-l { animation: mc-arm-l 1s ease-in-out infinite; }
-        .mc-arm-r { animation: mc-arm-r 1s ease-in-out infinite; }
-        .mc-leg-l { animation: mc-leg 1s ease-in-out infinite; }
-        .mc-leg-r { animation: mc-leg 1s ease-in-out infinite reverse; }
-        @keyframes mc-bob { 0%,100% { transform: translateY(0) } 50% { transform: translateY(3px) } }
-        @keyframes mc-head { 0%,100% { transform: rotate(-8deg) } 50% { transform: rotate(8deg) } }
-        @keyframes mc-arm-l { 0%,100% { transform: rotate(140deg) } 50% { transform: rotate(200deg) } }
-        @keyframes mc-arm-r { 0%,100% { transform: rotate(-200deg) } 50% { transform: rotate(-140deg) } }
-        @keyframes mc-leg { 0%,100% { transform: rotate(-6deg) } 50% { transform: rotate(6deg) } }
+        .mcstage .mc-bob { animation: mc-bob .6s ease-in-out infinite; transform-origin: 50% 100%; }
+        .mcstage .mob-baby .mc-bob { animation-duration: .45s; }
+        .mcstage .mc-head { animation: mc-head 1.2s ease-in-out infinite; }
+        .mcstage .mc-arm-l { animation: mc-arm-l .6s ease-in-out infinite; }
+        .mcstage .mc-arm-r { animation: mc-arm-r .6s ease-in-out infinite; }
+        .mcstage .mc-leg-l { animation: mc-step .6s ease-in-out infinite; }
+        .mcstage .mc-leg-r { animation: mc-step .6s ease-in-out infinite reverse; }
+        @keyframes mc-bob { 0%,100% { transform: translateY(0) scaleY(1) } 35% { transform: translateY(-4px) scaleY(1.05) } 70% { transform: translateY(1px) scaleY(.94) } }
+        @keyframes mc-head { 0%,100% { transform: rotate(-9deg) } 50% { transform: rotate(9deg) } }
+        @keyframes mc-arm-l { 0%,100% { transform: rotate(150deg) } 50% { transform: rotate(205deg) } }
+        @keyframes mc-arm-r { 0%,100% { transform: rotate(-150deg) } 50% { transform: rotate(-205deg) } }
+        @keyframes mc-step { 0%,100% { transform: rotate(-8deg) } 50% { transform: rotate(8deg) } }
+
+        /* walk cycle: arms drop and swing, legs stride, no bounce */
+        .ph-walk .mc-bob { animation: none; }
+        .ph-walk .mc-arm-l { animation: mc-stride .5s ease-in-out infinite; }
+        .ph-walk .mc-arm-r { animation: mc-stride .5s ease-in-out infinite reverse; }
+        .ph-walk .mc-leg-l { animation: mc-stride .5s ease-in-out infinite reverse; }
+        .ph-walk .mc-leg-r { animation: mc-stride .5s ease-in-out infinite; }
+        @keyframes mc-stride { 0%,100% { transform: rotate(22deg) } 50% { transform: rotate(-22deg) } }
+
+        /* bow duel: outer skeletons aim at each other, arrows fly, hurt-flash
+           + knockback on hit; the wither ducks; the baby dances on oblivious */
+        .ph-fight .mob-a .mc-arm-r,
+        .ph-fight .mob-b .mc-arm-l { animation: none; }
+        .ph-fight .mob-a .mc-arm-r { transform: rotate(-90deg); }
+        .ph-fight .mob-b .mc-arm-l { transform: rotate(90deg); }
+        .ph-fight .mob-a .mc-hurtwrap { animation: mc-hurt-a 3.2s linear; }
+        .ph-fight .mob-b .mc-hurtwrap { animation: mc-hurt-b 3.2s linear; }
+        .ph-fight .mob-w .mc-hurtwrap { transform: translateY(14px) scaleY(.88); }
+        @keyframes mc-hurt-b { 0%,39% { filter: none; transform: none } 41%,52% { filter: sepia(1) saturate(7) hue-rotate(-55deg) brightness(1.1); transform: translateX(9px) } 56%,100% { filter: none; transform: none } }
+        @keyframes mc-hurt-a { 0%,61% { filter: none; transform: none } 63%,74% { filter: sepia(1) saturate(7) hue-rotate(-55deg) brightness(1.1); transform: translateX(-9px) } 78%,100% { filter: none; transform: none } }
+        .mc-arrow { position: absolute; width: 12px; height: 3px; background: #cfcfcf; bottom: 64px; opacity: 0; }
+        .ph-fight .mc-arrow-1 { left: 34px; animation: mc-fly1 3.2s linear; }
+        .ph-fight .mc-arrow-2 { left: 150px; animation: mc-fly2 3.2s linear; }
+        @keyframes mc-fly1 { 0%,27% { opacity: 0; transform: translateX(0) } 28% { opacity: 1 } 40% { opacity: 1; transform: translateX(118px) } 41%,100% { opacity: 0; transform: translateX(118px) } }
+        @keyframes mc-fly2 { 0%,49% { opacity: 0; transform: translateX(0) } 50% { opacity: 1 } 62% { opacity: 1; transform: translateX(-118px) } 63%,100% { opacity: 0; transform: translateX(-118px) } }
+
+        /* hearts while dancing */
+        .mc-heart { position: absolute; font-size: 11px; color: #ff8fb3; opacity: 0; }
+        .ph-dance .mc-heart { animation: mc-heart 2.4s ease-out infinite; }
+        @keyframes mc-heart { 0% { opacity: 0; transform: translateY(0) } 15% { opacity: .9 } 100% { opacity: 0; transform: translateY(-24px) } }
+
         @media (prefers-reduced-motion: reduce) {
-          .mc-bob, .mc-head, .mc-arm-l, .mc-arm-r, .mc-leg-l, .mc-leg-r { animation: none; }
+          .mcstage *, .mcstage .mc-bob { animation: none !important; transition: none !important; }
         }
       `}</style>
     </div>
