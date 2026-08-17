@@ -10,6 +10,7 @@ import {
   socialLinks,
   education,
   languages,
+  publications,
 } from "./constants/data.jsx";
 
 // Chiang-style two-column home: sticky left identity column with scroll-spy
@@ -19,6 +20,7 @@ const SECTIONS = [
   { id: "about", label: "About" },
   { id: "experience", label: "Experience" },
   { id: "projects", label: "Projects" },
+  { id: "research", label: "Research" },
   { id: "education", label: "Education" },
 ];
 
@@ -264,6 +266,16 @@ export default function ListHome() {
               {projects.map((p) => (
                 <ExpandRow key={p.slug} p={p} open={openSlug === p.slug}
                            onToggle={() => setOpenSlug(openSlug === p.slug ? null : p.slug)} />
+              ))}
+            </div>
+          </section>
+
+          <section id="research" className="scroll-mt-24 mt-20">
+            <MobileHead>Research</MobileHead>
+            <div className="dim-list">
+              {publications.map((p) => (
+                <Row key={p.title} period={p.period} title={p.title} sub={p.venue}
+                     href={p.link} desc={p.desc} />
               ))}
             </div>
           </section>
