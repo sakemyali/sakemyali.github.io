@@ -24,16 +24,6 @@ export const projects = [
     highlights: ["Real-time zoom with mouse scroll", "Multiple fractal sets", "Psychedelic color palette cycling"],
   },
   {
-    id: 2,
-    slug: "ichack26",
-    name: "iCHack 26",
-    link: "https://github.com/sakemyali/ichack26",
-    tagline: "Imperial College hackathon project",
-    description: "Built during iCHack 26 at Imperial College London, sponsored by HRT, IMC, and Citadel. A collaborative project developed under a 24-hour time constraint.",
-    tech: ["Python", "APIs", "Team Collaboration"],
-    highlights: ["24-hour build sprint", "Presented to industry sponsors", "Cross-functional team"],
-  },
-  {
     id: 3,
     slug: "push-swap",
     name: "Push Swap",
