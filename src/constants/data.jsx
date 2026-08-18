@@ -161,6 +161,15 @@ export const hackathons = [
   },
 ];
 
+export const publications = [
+  {
+    title: "Quantifying Layered Security Overhead in Explainable ML Fraud Detection Systems",
+    venue: "MDPI Technologies (special issue) — manuscript in submission",
+    period: "2026",
+    desc: "Measures the performance cost of defense-in-depth in an explainable fraud-detection service: STRIDE-modeled three-container architecture with a crypto-agile config layer, Isolation Forest anomaly pipeline with an /explain endpoint, and per-layer overhead benchmarks against published fraud-detection baselines.",
+  },
+];
+
 export const education = [
   {
     school: "42 Tokyo",
