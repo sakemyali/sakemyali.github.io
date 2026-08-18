@@ -1,70 +1,80 @@
 import { useEffect, useRef, useState } from "react";
 
-// Flat 2D mobs in PROFILE view using the official Minecraft entity textures
-// (public/mc/*.png, © Mojang — non-commercial fan use). Each mob runs its own
-// little wander brain, like in-game AI: walk a bit, stop, look at the viewer,
-// glance back over the shoulder — independently, bounded by the text width.
+// 3D mobs from the official Minecraft entity texture atlases (public/mc/*.png,
+// © Mojang — non-commercial fan use). Each body part is a CSS-3D box
+// (front/left/right/top faces from its UV block, sides shaded). Each mob runs
+// its own wander brain: walks (yawing to face travel), idles, looks at the
+// viewer, or glances back — independently, bounded by the text width. Limbs
+// swing forward/back with rotateX, exactly like the game's walk cycle.
 
-function Part({ src, atlas, x, y, w, h, s, className, style }) {
+// One textured box. (u,v) = UV block origin, (w,h,d) = box dims in texels.
+// withBack also renders the back face (needed where the front is transparent
+// — the skeleton spine lives on the body's back face — and for turned heads).
+function Box({ src, atlas, u, v, w, h, d, s, className, style, withBack }) {
+  const D = d * s;
+  const face = (cx, cy, cw, ch, transform, bright, extra) => (
+    <div key={transform} style={{
+      position: "absolute", left: 0, top: 0,
+      width: cw * s, height: ch * s,
+      backgroundImage: `url(${src})`,
+      backgroundPosition: `${-cx * s}px ${-cy * s}px`,
+      backgroundSize: `${atlas[0] * s}px ${atlas[1] * s}px`,
+      imageRendering: "pixelated",
+      transformOrigin: "0 0",
+      transform,
+      backfaceVisibility: "hidden",
+      filter: `brightness(${bright})`,
+      ...extra,
+    }} />
+  );
   return (
-    <div
-      className={className}
-      style={{
-        position: "absolute",
-        width: w * s,
-        height: h * s,
-        backgroundImage: `url(${src})`,
-        backgroundPosition: `${-x * s}px ${-y * s}px`,
-        backgroundSize: `${atlas[0] * s}px ${atlas[1] * s}px`,
-        imageRendering: "pixelated",
-        ...style,
-      }}
-    />
+    <div className={className}
+         style={{ position: "absolute", width: w * s, height: h * s, transformStyle: "preserve-3d", ...style }}>
+      {/* inner shell centers the box's depth on its layout plane, so limb
+          rotation animations on the outer div don't wipe the centering */}
+      <div style={{ position: "absolute", inset: 0, transformStyle: "preserve-3d", transform: `translateZ(${-D / 2}px)` }}>
+        {withBack && face(u + 2 * d + w, v + d, w, h, "translateZ(0px)", 0.55, { backfaceVisibility: "visible" })}
+        {face(u + d, v + d, w, h, `translateZ(${D}px)`, 1)}
+        {face(u, v + d, d, h, "rotateY(-90deg)", 0.72)}
+        {face(u + d + w, v + d, d, h, `translate3d(${w * s}px,0,${D}px) rotateY(90deg)`, 0.72)}
+        {face(u + d, v, w, d, "rotateX(90deg)", 1.15)}
+      </div>
+    </div>
   );
 }
 
 const A32 = [64, 32];
-// Side-face crops for the skeleton family (right-facing profile)
-const HEAD_SIDE = { x: 0, y: 8, w: 8, h: 8 };
-const HEAD_FRONT = { x: 8, y: 8, w: 8, h: 8 };
-const BODY_SIDE = { x: 16, y: 20, w: 4, h: 12 };
-const ARM_SIDE = { x: 40, y: 18, w: 2, h: 12 };
-const LEG_SIDE = { x: 0, y: 18, w: 2, h: 12 };
-// the spine is a full-height column on the body's BACK face (cols 3-4);
-// in-game it shows through the side face's transparent rib gaps
-const SPINE = { x: 35, y: 20, w: 2, h: 12 };
+// UV block origins + dims for the skeleton family (slim 2x12x2 limbs)
+const HEAD = { u: 0, v: 0, w: 8, h: 8, d: 8 };
+const BODY = { u: 16, v: 16, w: 8, h: 12, d: 4 };
+const ARM = { u: 40, v: 16, w: 2, h: 12, d: 2 };
+const LEG = { u: 0, v: 16, w: 2, h: 12, d: 2 };
+
+const YAW = 42; // deg the body turns toward its travel direction
 
 // Chibi build: the head renders at s*headScale while the body stays at s.
-// headPose: "side" | "front" (facing the viewer) | "back" (glancing behind)
-function SkeletonBody({ src, s, headScale = 1.35, headPose = "side" }) {
+// headYaw: extra head rotateY for look-at-viewer / glance-back poses
+// (only applied while standing, where the head-sway animation is off).
+function SkeletonBody({ src, s, headScale = 1.35, headYaw = 0 }) {
   const s2 = s * headScale;
   const hs = 8 * s2;
-  const W = Math.max(8 * s, hs);
-  const H = hs + 22 * s; // legs tuck 2 texels up under the pelvis
-  const cx = W / 2;
+  const W = Math.max(12 * s, hs);
+  const H = hs + 22 * s; // legs tuck 2 texels up under the ribcage: the
+  const cx = W / 2;      // texture's pelvis rows are transparent
   const t = { src, atlas: A32 };
-  const dim = { filter: "brightness(.55)" };
   return (
-    <div className="mc-walkbob" style={{ position: "relative", width: W, height: H }}>
-      {/* far limbs first: dimmed, a texel behind the near ones, counter-phased */}
-      <Part {...t} {...ARM_SIDE} s={s} className="mc-limb-far-arm"
-            style={{ left: cx - 2 * s, top: hs, transformOrigin: "50% 0", ...dim }} />
-      <Part {...t} {...LEG_SIDE} s={s} className="mc-limb-far-leg"
-            style={{ left: cx - 2 * s, top: hs + 10 * s, transformOrigin: "50% 0", ...dim }} />
-      {/* spine at the back edge, showing through the rib gaps like in-game */}
-      <Part {...t} {...SPINE} s={s} style={{ left: cx - 2 * s, top: hs }} />
-      <Part {...t} {...BODY_SIDE} s={s} style={{ left: cx - 2 * s, top: hs }} />
-      <Part {...t} {...LEG_SIDE} s={s} className="mc-limb-leg"
-            style={{ left: cx - s, top: hs + 10 * s, transformOrigin: "50% 0" }} />
-      <Part {...t} {...ARM_SIDE} s={s} className="mc-limb-arm"
-            style={{ left: cx - s, top: hs, transformOrigin: "50% 0" }} />
-      <Part {...t} {...(headPose === "front" ? HEAD_FRONT : HEAD_SIDE)} s={s2} className="mc-head"
-            style={{
-              left: cx - hs / 2, top: 0, transformOrigin: "50% 100%",
-              // glance back = mirrored side head; only applied while standing,
-              // where the head-sway animation is off and can't clobber it
-              transform: headPose === "back" ? "scaleX(-1)" : undefined,
-            }} />
+    <div className="mc-walkbob" style={{ position: "relative", width: W, height: H, transformStyle: "preserve-3d" }}>
+      <Box {...t} {...ARM} s={s} className="mc-arm-l" style={{ left: cx - 6 * s, top: hs, transformOrigin: "50% 0" }} />
+      <Box {...t} {...ARM} s={s} className="mc-arm-r" style={{ left: cx + 4 * s, top: hs, transformOrigin: "50% 0" }} />
+      <Box {...t} {...LEG} s={s} className="mc-leg-l" style={{ left: cx - 3 * s, top: hs + 10 * s, transformOrigin: "50% 0" }} />
+      <Box {...t} {...LEG} s={s} className="mc-leg-r" style={{ left: cx + 1 * s, top: hs + 10 * s, transformOrigin: "50% 0" }} />
+      <Box {...t} {...BODY} s={s} withBack style={{ left: cx - 4 * s, top: hs }} />
+      <Box {...t} {...HEAD} s={s2} withBack className="mc-head"
+           style={{
+             left: cx - hs / 2, top: 0, transformOrigin: "50% 100%",
+             transform: headYaw ? `rotateY(${headYaw}deg)` : undefined,
+             transition: "transform .3s",
+           }} />
     </div>
   );
 }
@@ -75,17 +85,18 @@ const SPEED = 26; // px/s amble
 // next action (walk / idle / look at viewer / glance back) at random.
 function Mob({ m, stageRef }) {
   const elRef = useRef(null);
-  const faceRef = useRef(null);
-  const [pose, setPose] = useState("walk");
+  const yawRef = useRef(null);
+  const [pose, setPose] = useState({ p: "walk", dir: 1 });
   const poseRef = useRef("walk");
   useEffect(() => {
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const el = elRef.current, face = faceRef.current;
+    const el = elRef.current, yawEl = yawRef.current;
     let x = m.home, dir = m.home > 150 ? -1 : 1, raf, timer, pauseTimer, alive = true;
     let spd = SPEED * (0.8 + Math.random() * 0.5); // per-segment gait variation
-    face.style.transform = `scaleX(${dir})`;
-    const go = (p) => { poseRef.current = p; setPose(p); };
-    const turn = () => { dir *= -1; face.style.transform = `scaleX(${dir})`; };
+    const tilt = () => { yawEl.style.transform = `perspective(600px) rotateX(-8deg) rotateY(${dir * YAW}deg)`; };
+    tilt();
+    const go = (p) => { poseRef.current = p; setPose({ p, dir }); };
+    const turn = () => { dir *= -1; tilt(); };
     let last = performance.now();
     const step = (t) => {
       const dt = Math.min((t - last) / 1000, 0.05);
@@ -119,12 +130,16 @@ function Mob({ m, stageRef }) {
     return () => { alive = false; cancelAnimationFrame(raf); clearTimeout(timer); clearTimeout(pauseTimer); };
   }, [m, stageRef]);
 
+  // look at viewer = head counter-yaws to cancel the body yaw;
+  // glance back = head turns ~130deg past the body toward its rear
+  const headYaw = pose.p === "front" ? -pose.dir * YAW
+                : pose.p === "back" ? pose.dir * 130 : 0;
+
   return (
-    <div ref={elRef} className={`mob ${pose === "walk" ? "" : "is-still"}`}
+    <div ref={elRef} className={`mob ${pose.p === "walk" ? "" : "is-still"}`}
          style={{ position: "absolute", bottom: 0, left: 0, transform: `translateX(${m.home}px)` }}>
-      <div ref={faceRef} style={{ transition: "transform .2s" }}>
-        <SkeletonBody src={m.src} s={m.s} headScale={m.headScale}
-                      headPose={pose === "front" || pose === "back" ? pose : "side"} />
+      <div ref={yawRef} style={{ transition: "transform .35s", transformStyle: "preserve-3d" }}>
+        <SkeletonBody src={m.src} s={m.s} headScale={m.headScale} headYaw={headYaw} />
       </div>
     </div>
   );
@@ -144,26 +159,28 @@ export function DancingSkeletons() {
          style={{ position: "relative", width: "100%", height: 150 }}>
       {MOBS.map((m) => <Mob key={m.cls} m={m} stageRef={stageRef} />)}
       <style>{`
-        /* faint glow lifts the thin bones off the dark background */
+        /* faint glow lifts the bones off the dark background (safe here:
+           .mob itself is never 3D-rotated, so the filter flattening is a no-op) */
         .mcstage .mob { filter: drop-shadow(0 0 2px rgba(255,255,255,.16)); }
-        /* game walk in profile: smooth cosine; diagonal gait via -half-cycle
-           animation-delay (NOT direction:reverse — these keyframes are
-           palindromes, so reverse plays the same motion). Near arm + far leg
-           together; near leg + far arm together. Bob = one dip per footfall. */
+        /* game walk: limbs swing forward/back (rotateX) as smooth cosines;
+           diagonal gait via -half-cycle delay (keyframes are palindromes, so
+           direction:reverse would play the identical motion). Bob per footfall. */
         .mcstage .mc-walkbob { animation: mc-walkbob .375s ease-in-out infinite; }
         .mcstage .mc-head { animation: mc-head 2.4s ease-in-out infinite; }
-        .mcstage .mc-limb-arm { animation: mc-swing-arm .75s ease-in-out infinite; }
-        .mcstage .mc-limb-far-arm { animation: mc-swing-arm .75s ease-in-out infinite; animation-delay: -.375s; }
-        .mcstage .mc-limb-leg { animation: mc-swing-leg .75s ease-in-out infinite; animation-delay: -.375s; }
-        .mcstage .mc-limb-far-leg { animation: mc-swing-leg .75s ease-in-out infinite; }
+        .mcstage .mc-arm-l { animation: mc-swing-arm .75s ease-in-out infinite; }
+        .mcstage .mc-arm-r { animation: mc-swing-arm .75s ease-in-out infinite; animation-delay: -.375s; }
+        .mcstage .mc-leg-l { animation: mc-swing-leg .75s ease-in-out infinite; animation-delay: -.375s; }
+        .mcstage .mc-leg-r { animation: mc-swing-leg .75s ease-in-out infinite; }
         @keyframes mc-walkbob { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-1.5px) } }
         @keyframes mc-head { 0%,100% { transform: rotate(-3deg) } 50% { transform: rotate(3deg) } }
-        @keyframes mc-swing-leg { 0%,100% { transform: rotate(20deg) } 50% { transform: rotate(-20deg) } }
-        @keyframes mc-swing-arm { 0%,100% { transform: rotate(14deg) } 50% { transform: rotate(-14deg) } }
-        /* standing still: limbs and head drop to rest pose */
+        @keyframes mc-swing-leg { 0%,100% { transform: rotateX(22deg) } 50% { transform: rotateX(-22deg) } }
+        @keyframes mc-swing-arm { 0%,100% { transform: rotateX(-14deg) } 50% { transform: rotateX(14deg) } }
+        /* standing still: limbs and head sway drop to rest so look poses
+           (inline head transform) aren't clobbered by the animation */
         .mcstage .is-still .mc-walkbob,
         .mcstage .is-still .mc-head,
-        .mcstage .is-still [class*="mc-limb"] { animation: none; }
+        .mcstage .is-still .mc-arm-l, .mcstage .is-still .mc-arm-r,
+        .mcstage .is-still .mc-leg-l, .mcstage .is-still .mc-leg-r { animation: none; }
         @media (prefers-reduced-motion: reduce) {
           .mcstage * { animation: none !important; transition: none !important; }
         }
@@ -172,13 +189,19 @@ export function DancingSkeletons() {
   );
 }
 
-// Wither boss center head, flat front face (8x8 at (8,8) in the 64x64 atlas),
-// used as the "About" section name.
+// Wither boss center head as a small 3D cube, used as the "About" label.
 export function WitherHead({ px = 2 }) {
   return (
     <span role="img" aria-label="About"
-          style={{ display: "inline-block", verticalAlign: "middle", position: "relative", width: 8 * px, height: 8 * px }}>
-      <Part src="/mc/wither.png" atlas={[64, 64]} x={8} y={8} w={8} h={8} s={px} style={{ left: 0, top: 0 }} />
+          style={{ display: "inline-block", verticalAlign: "middle", width: 10 * px, height: 9 * px }}>
+      <span style={{
+        position: "relative", display: "block", width: 8 * px, height: 8 * px,
+        transform: "perspective(200px) rotateX(-14deg) rotateY(-28deg)",
+        transformStyle: "preserve-3d",
+      }}>
+        <Box src="/mc/wither.png" atlas={[64, 64]} u={0} v={0} w={8} h={8} d={8} s={px}
+             style={{ left: 0, top: 0 }} />
+      </span>
     </span>
   );
 }
