@@ -114,28 +114,6 @@ export const projects = [
       },
     ],
   },
-  {
-    id: 6,
-    slug: "tech-europe-hack",
-    name: "Bahja — AI Interior Designer",
-    link: "https://github.com/sakemyali/Tech-Europe_Hack2026",
-    repo: "sakemyali/Tech-Europe_Hack2026",
-    award: "Winner — FAL Challenge, {Tech: Europe} Paris 2026",
-    tagline: "Design and furnish rooms through conversation",
-    description: "Winner of the FAL Challenge at the {Tech: Europe} Paris AI Hackathon 2026. Bahja (بهجة — \"delight\") collapses the fragmented interior-design workflow into one conversation: describe the room you want, browse real furniture from real retailers, and watch AI paint your selections into photorealistic visualizations of your space.",
-    tech: ["TypeScript", "fal.ai", "MCP"],
-    highlights: ["Won the FAL Challenge against international competition", "Photorealistic room renders via fal.ai image models", "Real retailer products, not stock imagery", "Built on Skybridge MCP for tool orchestration"],
-    sections: [
-      {
-        title: "The problem",
-        body: "Furnishing a room today is a disconnected mess: measure, browse a dozen retailer sites, guess whether things fit, and imagine the result — you can't see the room until you've already bought it. Bahja's bet was that a conversational flow with generative visualization removes the imagination step entirely.",
-      },
-      {
-        title: "How it works",
-        body: "A chat agent orchestrates tools over Skybridge MCP: product search returns real furniture from retailer catalogs, the user picks favorites, and fal.ai image models composite the selections into the user's actual room photo as a photorealistic render. The loop — describe, browse, select, visualize — repeats until the room looks right.",
-      },
-    ],
-  },
 ];
 
 export const socialLinks = [
