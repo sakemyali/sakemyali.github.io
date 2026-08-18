@@ -118,19 +118,15 @@ function ProjectPage() {
 
         <header className="mt-10">
           {project.award && (
-            <p className="inline-block text-[11px] tracking-wide text-amber-200/90 border border-amber-200/25 bg-amber-200/[0.06] rounded-full px-3 py-1 mb-3">
-              🏆 {project.award}
+            <p className="text-[11px] tracking-[0.2em] uppercase text-neutral-300 mb-2">
+              {project.award}
             </p>
           )}
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">{project.name}</h1>
           <p className="text-neutral-400 text-[15px] mt-3">{project.tagline}</p>
-          <div className="flex flex-wrap gap-2 mt-4">
-            {project.tech.map((t) => (
-              <span key={t} className="text-[11px] text-neutral-400 border border-white/10 rounded-full px-2.5 py-0.5">
-                {t}
-              </span>
-            ))}
-          </div>
+          <p className="text-[11px] tracking-[0.2em] uppercase text-neutral-500 mt-4">
+            {project.tech.join(" / ")}
+          </p>
         </header>
 
         <video

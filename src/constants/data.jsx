@@ -124,7 +124,7 @@ export const projects = [
     tagline: "Design and furnish rooms through conversation",
     description: "Winner of the FAL Challenge at the {Tech: Europe} Paris AI Hackathon 2026. Bahja (بهجة — \"delight\") collapses the fragmented interior-design workflow into one conversation: describe the room you want, browse real furniture from real retailers, and watch AI paint your selections into photorealistic visualizations of your space.",
     tech: ["TypeScript", "fal.ai", "MCP"],
-    highlights: ["🏆 Won the FAL Challenge against international competition", "Photorealistic room renders via fal.ai image models", "Real retailer products, not stock imagery", "Built on Skybridge MCP for tool orchestration"],
+    highlights: ["Won the FAL Challenge against international competition", "Photorealistic room renders via fal.ai image models", "Real retailer products, not stock imagery", "Built on Skybridge MCP for tool orchestration"],
     sections: [
       {
         title: "The problem",
