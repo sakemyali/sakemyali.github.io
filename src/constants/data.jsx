@@ -35,23 +35,6 @@ export const projects = [
     ],
   },
   {
-    id: 2,
-    slug: "ichack26",
-    name: "iCHack 26",
-    link: "https://github.com/sakemyali/ichack26",
-    repo: "sakemyali/ichack26",
-    tagline: "Full-stack starterkit built under hackathon pressure",
-    description: "Built during iCHack 26 at Imperial College London, sponsored by HRT, IMC, and Citadel. A clean full-stack setup — FastAPI backend, React + Vite + TanStack Router frontend, PostgreSQL, typed API clients via HeyAPI, and Docker Compose for local infrastructure.",
-    tech: ["FastAPI", "React", "PostgreSQL"],
-    highlights: ["24-hour build sprint", "Typed API clients end-to-end (HeyAPI)", "Docker Compose local infra: Postgres, pgweb, backend"],
-    sections: [
-      {
-        title: "Architecture",
-        body: "FastAPI serves a typed OpenAPI schema; HeyAPI generates TypeScript clients from it, so the React frontend gets compile-time safety against the backend contract. Docker Compose spins up Postgres, pgweb, and the backend in one command — the whole stack boots fresh on any teammate's laptop in minutes, which is what a 24-hour clock demands.",
-      },
-    ],
-  },
-  {
     id: 3,
     slug: "push-swap",
     name: "Push Swap",
