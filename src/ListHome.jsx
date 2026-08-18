@@ -223,7 +223,8 @@ export default function ListHome() {
         {/* ── right column: scrolling content ── */}
         <main className="lg:w-[58%] lg:py-24 pb-24">
           <section id="about" className="scroll-mt-24">
-            <div className="mb-8">
+            {/* negative margin seats the walkers' feet on the first line's letters */}
+            <div className="-mb-1.5">
               <DancingSkeletons />
             </div>
             <MobileHead><WitherHead px={2} /></MobileHead>
