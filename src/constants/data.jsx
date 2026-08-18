@@ -63,16 +63,6 @@ export const projects = [
     tech: ["Python", "HuggingFace", "Robotics"],
     highlights: ["AMD hardware integration", "AI model deployment", "Real-time processing"],
   },
-  {
-    id: 6,
-    slug: "tech-europe-hack",
-    name: "Tech Europe Hack 2026",
-    link: "https://github.com/sakemyali/Tech-Europe_Hack2026",
-    tagline: "AI hackathon with OpenAI & Lovable",
-    description: "Built at the {Tech: Europe} Paris AI Hackathon 2026, sponsored by OpenAI and Lovable. A cutting-edge AI project developed in a competitive international environment.",
-    tech: ["Python", "OpenAI API", "Cloud"],
-    highlights: ["OpenAI API integration", "Rapid prototyping", "International competition"],
-  },
 ];
 
 export const socialLinks = [
