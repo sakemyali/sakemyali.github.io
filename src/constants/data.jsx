@@ -159,32 +159,6 @@ export const experiences = [
   },
 ];
 
-export const tools = [
-  "Python & C – Backend Development",
-  "AWS & Azure – Cloud Infrastructure",
-  "Docker – Containerization",
-  "Git & GitHub – Version Control",
-  "LangGraph – Agentic LLM Orchestration",
-];
-
-export const hackathons = [
-  {
-    name: "{Tech: Europe} Paris AI Hackathon 2026",
-    date: "2026",
-    desc: "Sponsors: OpenAI, Lovable...",
-  },
-  {
-    name: "AMD Robotics Hackathon Paris 2025",
-    date: "2025",
-    desc: "Sponsors: AMD, HuggingFace...",
-  },
-  {
-    name: "iCHack 26",
-    date: "2026",
-    desc: "Sponsors: HRT, IMC, Citadel...",
-  },
-];
-
 export const publications = [
   {
     title: "Quantifying Layered Security Overhead in Explainable ML Fraud Detection Systems",
@@ -209,94 +183,9 @@ export const education = [
   },
 ];
 
-export const achievements = [
-  {
-    title: "1st Class Honours",
-    value: "BSc",
-    desc: "Graduated with 1st Class Honours in Cyber Security from Nottingham Trent University.",
-  },
-  {
-    title: "42 Tokyo Piscine",
-    value: "1st",
-    desc: "Ranked 1st place in the 42 Tokyo entrance exam (Piscine).",
-  },
-  {
-    title: "CS Project Prize",
-    value: "NTU",
-    desc: "Awarded the Department of Computer Science Project Prize in BSc Cyber Security.",
-  },
-];
-
-export const skills = [
-  {
-    category: "Programming & Frameworks",
-    skills: [
-      "Python / C / C++",
-      "Django / Celery",
-      "SQL / LangGraph",
-    ],
-  },
-  {
-    category: "Cloud & Tools",
-    skills: ["AWS / Azure / Firebase", "Docker / Git / GitHub", "REST APIs / ChromaDB"],
-  },
-  {
-    category: "Cybersecurity & AI",
-    skills: ["Pen Testing / Cryptography", "Post-Quantum Cryptography / Networking Security", "Generative AI / LLMs / RAG"],
-  },
-  {
-    category: "Other",
-    skills: ["Agile / DevSecOps", "Prompt Engineering", "Computer Vision"],
-  },
-];
-
-export const techStack = [
-  [
-    { name: "Python", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/python/python-original.svg" },
-    { name: "Django", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/django/django-plain.svg" },
-    { name: "C", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/c/c-original.svg" },
-    { name: "C++", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/cplusplus/cplusplus-original.svg" },
-    { name: "PostgreSQL", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/postgresql/postgresql-original.svg" },
-    { name: "Docker", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/docker/docker-original.svg" },
-    { name: "AWS", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/amazonwebservices/amazonwebservices-plain-wordmark.svg" },
-    { name: "Azure", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/azure/azure-original.svg" },
-  ],
-  [
-    { name: "Git", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/git/git-original.svg" },
-    { name: "GitHub", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/github/github-original.svg" },
-    { name: "Firebase", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/firebase/firebase-original.svg" },
-    { name: "Linux", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/linux/linux-original.svg" },
-    { name: "Node.js", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/nodejs/nodejs-original.svg" },
-    { name: "Flutter", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/flutter/flutter-original.svg" },
-    { name: "SQL", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/azuresqldatabase/azuresqldatabase-original.svg" },
-    { name: "LangGraph", icon: "https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/python/python-original.svg" },
-  ],
-];
-
-export const certificates = [
-  "BSc Cyber Security – 1st Class Honours, NTU",
-  "CS Project Prize – BSc Cyber Security, NTU",
-  "1st Place – 42 Tokyo Piscine Entrance Exam",
-];
-
 export const languages = [
   { name: "English", level: "Full Professional" },
   { name: "French", level: "Advanced" },
   { name: "Arabic", level: "Advanced" },
   { name: "Japanese", level: "Advanced" },
-];
-
-export const currentlyLearning = [
-  "C – Systems programming & memory safety",
-  "Quantum Computing – Post-quantum cryptography",
-];
-
-export const githubUsername = "sakemyali";
-
-export const accentThemes = [
-  { name: "Mono", color: "#ffffff", rgb: "255, 255, 255" },
-  { name: "Blue", color: "#60a5fa", rgb: "96, 165, 250" },
-  { name: "Green", color: "#4ade80", rgb: "74, 222, 128" },
-  { name: "Amber", color: "#fbbf24", rgb: "251, 191, 36" },
-  { name: "Rose", color: "#fb7185", rgb: "251, 113, 133" },
 ];
