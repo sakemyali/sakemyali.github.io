@@ -225,11 +225,12 @@ export default function ListHome() {
         {/* ── right column: scrolling content ── */}
         <main className="lg:w-[58%] lg:py-24 pb-24">
           <section id="about" className="scroll-mt-24">
-            {/* negative margin seats the walkers' feet on the first line's letters */}
+            {/* heading first so it doesn't sit between the walkers and the text
+                on phones; negative margin seats their feet on the first line */}
+            <MobileHead><WitherHead px={2} /></MobileHead>
             <div className="-mb-1.5">
               <DancingSkeletons />
             </div>
-            <MobileHead><WitherHead px={2} /></MobileHead>
             <div className="text-[14px] text-neutral-300 leading-relaxed space-y-4">
               <p>
                 I'm a backend &amp; ML engineer in Tokyo with a cybersecurity
