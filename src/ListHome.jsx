@@ -11,6 +11,7 @@ import {
   education,
   languages,
   publications,
+  interests,
 } from "./constants/data.jsx";
 
 // Chiang-style two-column home: sticky left identity column with scroll-spy
@@ -18,10 +19,11 @@ import {
 
 const SECTIONS = [
   { id: "about", label: "About" },
-  { id: "experience", label: "Experience" },
-  { id: "projects", label: "Projects" },
-  { id: "research", label: "Research" },
   { id: "education", label: "Education" },
+  { id: "projects", label: "Projects" },
+  { id: "experience", label: "Experience" },
+  { id: "research", label: "Research" },
+  { id: "interests", label: "Interests" },
 ];
 
 function useScrollSpy() {
@@ -253,11 +255,11 @@ export default function ListHome() {
             </div>
           </section>
 
-          <section id="experience" className="scroll-mt-24 mt-20">
-            <MobileHead>Experience</MobileHead>
+          <section id="education" className="scroll-mt-24 mt-20">
+            <MobileHead>Education</MobileHead>
             <div className="dim-list">
-              {experiences.map((e) => (
-                <Row key={e.company} period={e.period} title={e.company} sub={e.title} desc={e.desc} />
+              {education.map((e) => (
+                <Row key={e.school} period={e.period} title={e.school} sub={e.degree} desc={e.desc} />
               ))}
             </div>
           </section>
@@ -272,6 +274,15 @@ export default function ListHome() {
             </div>
           </section>
 
+          <section id="experience" className="scroll-mt-24 mt-20">
+            <MobileHead>Experience</MobileHead>
+            <div className="dim-list">
+              {experiences.map((e) => (
+                <Row key={e.company} period={e.period} title={e.company} sub={e.title} desc={e.desc} />
+              ))}
+            </div>
+          </section>
+
           <section id="research" className="scroll-mt-24 mt-20">
             <MobileHead>Research</MobileHead>
             <div className="dim-list">
@@ -282,11 +293,11 @@ export default function ListHome() {
             </div>
           </section>
 
-          <section id="education" className="scroll-mt-24 mt-20">
-            <MobileHead>Education</MobileHead>
+          <section id="interests" className="scroll-mt-24 mt-20">
+            <MobileHead>Interests</MobileHead>
             <div className="dim-list">
-              {education.map((e) => (
-                <Row key={e.school} period={e.period} title={e.school} sub={e.degree} desc={e.desc} />
+              {interests.map((i) => (
+                <Row key={i.title} title={i.title} desc={i.desc} />
               ))}
             </div>
           </section>

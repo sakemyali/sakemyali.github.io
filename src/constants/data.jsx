@@ -189,3 +189,9 @@ export const languages = [
   { name: "Arabic", level: "Advanced" },
   { name: "Japanese", level: "Advanced" },
 ];
+
+// TODO(ali): fill in — seeded from what the site used to list under "currently learning"
+export const interests = [
+  { title: "Systems programming", desc: "C, memory safety, and what the compiler actually emits." },
+  { title: "Post-quantum cryptography", desc: "Crypto-agile designs that survive the migration." },
+];
