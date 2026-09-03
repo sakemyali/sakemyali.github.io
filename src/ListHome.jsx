@@ -203,7 +203,14 @@ export default function ListHome() {
           </div>
 
           {/* socials pinned to the bottom of the column */}
-          <div className="flex flex-wrap gap-x-5 gap-y-2 mt-10 lg:mt-0 text-[13px]">
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 mt-10 lg:mt-0 text-[13px]">
+            {/* CV leads the row as a bright pill; the socials stay dim text */}
+            <a href="/cv.pdf" target="_blank" rel="noreferrer"
+               className="flex items-center gap-1.5 -my-1 px-2.5 py-1 rounded-md border border-white/30
+                          text-white font-medium hover:bg-white hover:text-black transition-colors">
+              <FileText size={14} />
+              CV
+            </a>
             {socialLinks.map((s) => {
               const Icon = s.icon;
               return (
@@ -214,11 +221,6 @@ export default function ListHome() {
                 </a>
               );
             })}
-            <a href="/cv.pdf" target="_blank" rel="noreferrer"
-               className="group/soc flex items-center gap-1.5 text-neutral-500 hover:text-white transition-colors">
-              <FileText size={14} className="opacity-60 group-hover/soc:opacity-100 transition-opacity" />
-              CV
-            </a>
           </div>
         </header>
 
