@@ -24,31 +24,32 @@ const SECTIONS = [
   { id: "education", label: "Education" },
 ];
 
-// Returns [active, pick]. pick(id) is for nav clicks: it sets the highlight
-// directly and mutes the observer for a beat, because sections near the
-// bottom of the page can never reach the observer's band and the jump would
-// otherwise hand the highlight to whichever section happens to sit there.
+// Returns [active, pick]. A section becomes active once its top passes a
+// reading line 30% down the viewport — except near the end of the page,
+// where the last sections can never reach that line: there their activation
+// points are packed at 120px steps above the bottom, so scrolling down (or
+// back up) walks through every one in order. pick(id) is for nav clicks: it
+// sets the highlight directly and mutes the scroll handler for a beat.
 function useScrollSpy() {
-  const [active, setActive] = useState("about");
+  const [active, setActive] = useState(SECTIONS[0].id);
   const muted = useRef(0);
   useEffect(() => {
-    const io = new IntersectionObserver(
-      (entries) => {
-        if (performance.now() < muted.current) return;
-        for (const e of entries) if (e.isIntersecting) setActive(e.target.id);
-      },
-      { rootMargin: "-25% 0px -65% 0px" }
-    );
-    SECTIONS.forEach(({ id }) => {
-      const el = document.getElementById(id);
-      if (el) io.observe(el);
-    });
-    // at the very bottom the last section may never reach the band: force it
     const onScroll = () => {
-      if (innerHeight + scrollY >= document.documentElement.scrollHeight - 2) setActive(SECTIONS.at(-1).id);
+      if (performance.now() < muted.current) return;
+      const y = scrollY, max = document.documentElement.scrollHeight - innerHeight;
+      let id = SECTIONS[0].id;
+      SECTIONS.forEach(({ id: sid }, i) => {
+        const el = document.getElementById(sid);
+        if (!el) return;
+        const natural = el.getBoundingClientRect().top + y - innerHeight * 0.3;
+        const packed = max - (SECTIONS.length - 1 - i) * 120;
+        if (y >= Math.min(natural, packed) - 1) id = sid;
+      });
+      setActive(id);
     };
+    onScroll();
     addEventListener("scroll", onScroll, { passive: true });
-    return () => { io.disconnect(); removeEventListener("scroll", onScroll); };
+    return () => removeEventListener("scroll", onScroll);
   }, []);
   const pick = (id) => { muted.current = performance.now() + 500; setActive(id); };
   return [active, pick];
