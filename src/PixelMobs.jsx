@@ -14,6 +14,9 @@ const HEAD = { u: 0, v: 0, w: 8, h: 8, d: 8 };
 const BODY = { u: 16, v: 16, w: 8, h: 12, d: 4 };
 const ARM = { u: 40, v: 16, w: 2, h: 12, d: 2 };
 const LEG = { u: 0, v: 16, w: 2, h: 12, d: 2 };
+// the two spine columns of the body's back face, as a 2-wide strip (d=0 so
+// Sprite's front-face maths reads it straight from the atlas)
+const SPINE = { u: 35, v: 20, w: 2, h: 12, d: 0 };
 
 // One face of one UV block, at texel scale s. A block's faces sit in a fixed
 // row at v+d: side (d wide), front (w), other side (d), back (w).
@@ -54,6 +57,9 @@ function Skeleton({ src, s, headScale = 1.35, view }) {
             the near pair, and arms swing opposite their own-side leg. */}
         <Sprite {...t} {...LEG} face="side" className="mc-far" style={{ left: cx - s, top: hs + 10 * s }} />
         <Sprite {...t} {...ARM} face="side" className="mc-near" style={{ left: cx - s, top: hs }} />
+        {/* the side face is rib slats with gaps; the spine sits at the rear
+            edge (x=0 — the unflipped sprite faces right) and shows through */}
+        <Sprite {...t} {...SPINE} style={{ left: cx - 2 * s, top: hs }} />
         <Sprite {...t} {...BODY} face="side" style={{ left: cx - 2 * s, top: hs }} />
         <Sprite {...t} {...LEG} face="side" className="mc-near" style={{ left: cx - s, top: hs + 10 * s }} />
         <Sprite {...t} {...ARM} face="side" className="mc-far" style={{ left: cx - s, top: hs }} />
@@ -71,6 +77,10 @@ function Skeleton({ src, s, headScale = 1.35, view }) {
       <Sprite {...t} {...ARM} face={face} style={{ left: cx + 4 * s, top: hs }} />
       <Sprite {...t} {...LEG} face={face} style={{ left: cx - 3 * s, top: hs + 10 * s }} />
       <Sprite {...t} {...LEG} face={face} style={{ left: cx + s, top: hs + 10 * s }} />
+      {/* the ribcage has holes and the spine is painted on the opposite face:
+          show the far face through them, mirrored, as a see-through box would */}
+      <Sprite {...t} {...BODY} face={face === "back" ? "front" : "back"}
+              style={{ left: cx - 4 * s, top: hs, transform: "scaleX(-1)" }} />
       <Sprite {...t} {...BODY} face={face} style={{ left: cx - 4 * s, top: hs }} />
       <Sprite {...t} {...HEAD} s={s2} face={face} style={{ left: cx - hs / 2, top: 0 }} />
     </div>
