@@ -43,7 +43,12 @@ function useScrollSpy() {
       const el = document.getElementById(id);
       if (el) io.observe(el);
     });
-    return () => io.disconnect();
+    // at the very bottom the last section may never reach the band: force it
+    const onScroll = () => {
+      if (innerHeight + scrollY >= document.documentElement.scrollHeight - 2) setActive(SECTIONS.at(-1).id);
+    };
+    addEventListener("scroll", onScroll, { passive: true });
+    return () => { io.disconnect(); removeEventListener("scroll", onScroll); };
   }, []);
   const pick = (id) => { muted.current = performance.now() + 500; setActive(id); };
   return [active, pick];
