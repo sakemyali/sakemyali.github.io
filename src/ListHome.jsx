@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { FileText } from "lucide-react";
+import { FileText, Mail } from "lucide-react";
 import DitherBackground from "./DitherBackground";
 import { DancingSkeletons, WitherHead } from "./PixelMobs";
 import {
@@ -203,24 +203,33 @@ export default function ListHome() {
           </div>
 
           {/* socials pinned to the bottom of the column */}
-          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 mt-10 lg:mt-0 text-[13px]">
-            {/* CV leads the row as a bright pill; the socials stay dim text */}
-            <a href="/cv.pdf" target="_blank" rel="noreferrer"
-               className="flex items-center gap-1.5 -my-1 px-2.5 py-1 rounded-md border border-white/30
-                          text-white font-medium hover:bg-white hover:text-black transition-colors">
-              <FileText size={14} />
-              CV
-            </a>
-            {socialLinks.map((s) => {
-              const Icon = s.icon;
-              return (
-                <a key={s.name} href={s.link} target="_blank" rel="noreferrer"
-                   className="group/soc flex items-center gap-1.5 text-neutral-500 hover:text-white transition-colors">
-                  <Icon size={14} className="opacity-60 group-hover/soc:opacity-100 transition-opacity" />
-                  {s.name}
+          <div className="mt-10 lg:mt-0 text-[13px]">
+            {/* CV and Email as bright pills; the socials on their own line as dim text */}
+            <div className="flex flex-wrap gap-2">
+              {[
+                { name: "CV", icon: FileText, href: "/cv.pdf" },
+                { name: "Email", icon: Mail, href: `mailto:${personalInfo.email}` },
+              ].map((b) => (
+                <a key={b.name} href={b.href} target="_blank" rel="noreferrer"
+                   className="flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-white/30
+                              text-white font-medium hover:bg-white hover:text-black transition-colors">
+                  <b.icon size={14} />
+                  {b.name}
                 </a>
-              );
-            })}
+              ))}
+            </div>
+            <div className="flex flex-wrap gap-x-5 gap-y-2 mt-4">
+              {socialLinks.map((s) => {
+                const Icon = s.icon;
+                return (
+                  <a key={s.name} href={s.link} target="_blank" rel="noreferrer"
+                     className="group/soc flex items-center gap-1.5 text-neutral-500 hover:text-white transition-colors">
+                    <Icon size={14} className="opacity-60 group-hover/soc:opacity-100 transition-opacity" />
+                    {s.name}
+                  </a>
+                );
+              })}
+            </div>
           </div>
         </header>
 
