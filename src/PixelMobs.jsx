@@ -133,7 +133,10 @@ function Mob({ m, stageRef }) {
       timer = setTimeout(decide, 2200 + Math.random() * 3800);
     };
     timer = setTimeout(decide, 1000 + Math.random() * 3000);
-    return () => { alive = false; cancelAnimationFrame(raf); clearTimeout(timer); clearTimeout(pauseTimer); };
+    // click: stop and face the viewer for a few seconds, then carry on
+    el.onclick = () => { go("stand"); clearTimeout(timer); clearTimeout(pauseTimer); timer = setTimeout(decide, 3000); };
+    el.style.cursor = "pointer"; // only while a handler is attached (not under reduced motion)
+    return () => { alive = false; el.onclick = null; el.style.cursor = ""; cancelAnimationFrame(raf); clearTimeout(timer); clearTimeout(pauseTimer); };
   }, [m, stageRef]);
 
   const side = pose.p === "walk";
