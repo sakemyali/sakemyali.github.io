@@ -123,13 +123,15 @@ function Mob({ m, stageRef }) {
       timer = setTimeout(decide, 2200 + Math.random() * 3800);
     };
     timer = setTimeout(decide, 1000 + Math.random() * 3000);
-    return () => { alive = false; cancelAnimationFrame(raf); clearTimeout(timer); clearTimeout(pauseTimer); };
+    // click: stop and face the viewer for a few seconds, then carry on
+    el.onclick = () => { go("stand"); clearTimeout(timer); timer = setTimeout(decide, 3000); };
+    return () => { alive = false; el.onclick = null; cancelAnimationFrame(raf); clearTimeout(timer); clearTimeout(pauseTimer); };
   }, [m, stageRef]);
 
   const side = pose.p === "walk";
   return (
     <div ref={elRef} className="mob"
-         style={{ position: "absolute", bottom: 0, left: 0, transform: `translateX(${m.home}px)` }}>
+         style={{ position: "absolute", bottom: 0, left: 0, cursor: "pointer", transform: `translateX(${m.home}px)` }}>
       {/* mirror the side sprite to face travel; front/back views need no flip */}
       <div style={{ transform: side && pose.dir === -1 ? "scaleX(-1)" : "none" }}>
         <Skeleton src={m.src} s={m.s} headScale={m.headScale}
