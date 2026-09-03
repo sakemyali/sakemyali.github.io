@@ -24,11 +24,17 @@ const SECTIONS = [
   { id: "education", label: "Education" },
 ];
 
+// Returns [active, pick]. pick(id) is for nav clicks: it sets the highlight
+// directly and mutes the observer for a beat, because sections near the
+// bottom of the page can never reach the observer's band and the jump would
+// otherwise hand the highlight to whichever section happens to sit there.
 function useScrollSpy() {
   const [active, setActive] = useState("about");
+  const muted = useRef(0);
   useEffect(() => {
     const io = new IntersectionObserver(
       (entries) => {
+        if (performance.now() < muted.current) return;
         for (const e of entries) if (e.isIntersecting) setActive(e.target.id);
       },
       { rootMargin: "-25% 0px -65% 0px" }
@@ -39,7 +45,8 @@ function useScrollSpy() {
     });
     return () => io.disconnect();
   }, []);
-  return active;
+  const pick = (id) => { muted.current = performance.now() + 500; setActive(id); };
+  return [active, pick];
 }
 
 // One dossier row: period gutter left, content right.
@@ -151,7 +158,7 @@ function ExpandRow({ p, open, onToggle }) {
 }
 
 export default function ListHome() {
-  const active = useScrollSpy();
+  const [active, pick] = useScrollSpy();
   const [openSlug, setOpenSlug] = useState(null);
 
   return (
@@ -182,7 +189,7 @@ export default function ListHome() {
             {/* scroll-spy nav with growing indicator lines */}
             <nav className="hidden lg:block mt-16">
               {SECTIONS.map((s) => (
-                <a key={s.id} href={`#${s.id}`} className="group flex items-center gap-4 py-2.5">
+                <a key={s.id} href={`#${s.id}`} onClick={() => pick(s.id)} className="group flex items-center gap-4 py-2.5">
                   <span
                     className={`h-px transition-all duration-300 ${
                       active === s.id
