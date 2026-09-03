@@ -223,7 +223,7 @@ export default function ListHome() {
                 const Icon = s.icon;
                 return (
                   <a key={s.name} href={s.link} target="_blank" rel="noreferrer"
-                     className="group/soc flex items-center gap-1.5 text-neutral-500 hover:text-white transition-colors">
+                     className="group/soc flex items-center gap-1.5 text-neutral-400 hover:text-white transition-colors">
                     <Icon size={14} className="opacity-60 group-hover/soc:opacity-100 transition-opacity" />
                     {s.name}
                   </a>
