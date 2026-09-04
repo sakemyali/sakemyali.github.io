@@ -1,4 +1,4 @@
-import { Github, Linkedin, Mail, Bot } from "lucide-react";
+import { Github, Linkedin, Bot } from "lucide-react";
 
 export const personalInfo = {
   name: "Moulay Ali Sakurai El idrissi",
@@ -116,12 +116,6 @@ export const socialLinks = [
     name: "Hugging Face",
     icon: Bot,
     link: "https://huggingface.co/sakemyali",
-    color: "hover:text-white",
-  },
-  {
-    name: "Email",
-    icon: Mail,
-    link: "mailto:myali.sakurai.elidrissi@gmail.com",
     color: "hover:text-white",
   },
 ];
