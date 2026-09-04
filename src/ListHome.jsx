@@ -26,22 +26,35 @@ const SECTIONS = [
   { id: "interests", label: "Interests" },
 ];
 
+// Returns [active, pick]. A section becomes active once its top passes a
+// reading line 30% down the viewport — except near the end of the page,
+// where the last sections can never reach that line: there their activation
+// points are packed at 120px steps above the bottom, so scrolling down (or
+// back up) walks through every one in order. pick(id) is for nav clicks: it
+// sets the highlight directly and mutes the scroll handler for a beat.
 function useScrollSpy() {
-  const [active, setActive] = useState("about");
+  const [active, setActive] = useState(SECTIONS[0].id);
+  const muted = useRef(0);
   useEffect(() => {
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) if (e.isIntersecting) setActive(e.target.id);
-      },
-      { rootMargin: "-25% 0px -65% 0px" }
-    );
-    SECTIONS.forEach(({ id }) => {
-      const el = document.getElementById(id);
-      if (el) io.observe(el);
-    });
-    return () => io.disconnect();
+    const onScroll = () => {
+      if (performance.now() < muted.current) return;
+      const y = scrollY, max = document.documentElement.scrollHeight - innerHeight;
+      let id = SECTIONS[0].id;
+      SECTIONS.forEach(({ id: sid }, i) => {
+        const el = document.getElementById(sid);
+        if (!el) return;
+        const natural = el.getBoundingClientRect().top + y - innerHeight * 0.3;
+        const packed = max - (SECTIONS.length - 1 - i) * 120;
+        if (y >= Math.min(natural, packed) - 1) id = sid;
+      });
+      setActive(id);
+    };
+    onScroll();
+    addEventListener("scroll", onScroll, { passive: true });
+    return () => removeEventListener("scroll", onScroll);
   }, []);
-  return active;
+  const pick = (id) => { muted.current = performance.now() + 500; setActive(id); };
+  return [active, pick];
 }
 
 // One dossier row: period gutter left, content right.
@@ -153,7 +166,7 @@ function ExpandRow({ p, open, onToggle }) {
 }
 
 export default function ListHome() {
-  const active = useScrollSpy();
+  const [active, pick] = useScrollSpy();
   const [openSlug, setOpenSlug] = useState(null);
 
   return (
@@ -184,7 +197,7 @@ export default function ListHome() {
             {/* scroll-spy nav with growing indicator lines */}
             <nav className="hidden lg:block mt-16">
               {SECTIONS.map((s) => (
-                <a key={s.id} href={`#${s.id}`} className="group flex items-center gap-4 py-2.5">
+                <a key={s.id} href={`#${s.id}`} onClick={() => pick(s.id)} className="group flex items-center gap-4 py-2.5">
                   <span
                     className={`h-px transition-all duration-300 ${
                       active === s.id
