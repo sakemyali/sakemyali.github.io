@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { FileText } from "lucide-react";
+import { FileText, Mail } from "lucide-react";
 import DitherBackground from "./DitherBackground";
 import { DancingSkeletons, WitherHead } from "./PixelMobs";
 import {
@@ -11,6 +11,7 @@ import {
   education,
   languages,
   publications,
+  interests,
 } from "./constants/data.jsx";
 
 // Chiang-style two-column home: sticky left identity column with scroll-spy
@@ -18,28 +19,42 @@ import {
 
 const SECTIONS = [
   { id: "about", label: "About" },
-  { id: "experience", label: "Experience" },
-  { id: "projects", label: "Projects" },
-  { id: "research", label: "Research" },
   { id: "education", label: "Education" },
+  { id: "projects", label: "Projects" },
+  { id: "experience", label: "Experience" },
+  { id: "research", label: "Research" },
+  { id: "interests", label: "Interests" },
 ];
 
+// Returns [active, pick]. A section becomes active once its top passes a
+// reading line 30% down the viewport — except near the end of the page,
+// where the last sections can never reach that line: there their activation
+// points are packed at 120px steps above the bottom, so scrolling down (or
+// back up) walks through every one in order. pick(id) is for nav clicks: it
+// sets the highlight directly and mutes the scroll handler for a beat.
 function useScrollSpy() {
-  const [active, setActive] = useState("about");
+  const [active, setActive] = useState(SECTIONS[0].id);
+  const muted = useRef(0);
   useEffect(() => {
-    const io = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) if (e.isIntersecting) setActive(e.target.id);
-      },
-      { rootMargin: "-25% 0px -65% 0px" }
-    );
-    SECTIONS.forEach(({ id }) => {
-      const el = document.getElementById(id);
-      if (el) io.observe(el);
-    });
-    return () => io.disconnect();
+    const onScroll = () => {
+      if (performance.now() < muted.current) return;
+      const y = scrollY, max = document.documentElement.scrollHeight - innerHeight;
+      let id = SECTIONS[0].id;
+      SECTIONS.forEach(({ id: sid }, i) => {
+        const el = document.getElementById(sid);
+        if (!el) return;
+        const natural = el.getBoundingClientRect().top + y - innerHeight * 0.3;
+        const packed = max - (SECTIONS.length - 1 - i) * 120;
+        if (y >= Math.min(natural, packed) - 1) id = sid;
+      });
+      setActive(id);
+    };
+    onScroll();
+    addEventListener("scroll", onScroll, { passive: true });
+    return () => removeEventListener("scroll", onScroll);
   }, []);
-  return active;
+  const pick = (id) => { muted.current = performance.now() + 500; setActive(id); };
+  return [active, pick];
 }
 
 // One dossier row: period gutter left, content right.
@@ -151,7 +166,7 @@ function ExpandRow({ p, open, onToggle }) {
 }
 
 export default function ListHome() {
-  const active = useScrollSpy();
+  const [active, pick] = useScrollSpy();
   const [openSlug, setOpenSlug] = useState(null);
 
   return (
@@ -182,7 +197,7 @@ export default function ListHome() {
             {/* scroll-spy nav with growing indicator lines */}
             <nav className="hidden lg:block mt-16">
               {SECTIONS.map((s) => (
-                <a key={s.id} href={`#${s.id}`} className="group flex items-center gap-4 py-2.5">
+                <a key={s.id} href={`#${s.id}`} onClick={() => pick(s.id)} className="group flex items-center gap-4 py-2.5">
                   <span
                     className={`h-px transition-all duration-300 ${
                       active === s.id
@@ -203,22 +218,33 @@ export default function ListHome() {
           </div>
 
           {/* socials pinned to the bottom of the column */}
-          <div className="flex flex-wrap gap-x-5 gap-y-2 mt-10 lg:mt-0 text-[13px]">
-            {socialLinks.map((s) => {
-              const Icon = s.icon;
-              return (
-                <a key={s.name} href={s.link} target="_blank" rel="noreferrer"
-                   className="group/soc flex items-center gap-1.5 text-neutral-500 hover:text-white transition-colors">
-                  <Icon size={14} className="opacity-60 group-hover/soc:opacity-100 transition-opacity" />
-                  {s.name}
+          <div className="mt-10 lg:mt-0 text-[13px]">
+            {/* CV and Email as bright pills; the socials on their own line as dim text */}
+            <div className="flex flex-wrap gap-2">
+              {[
+                { name: "CV", icon: FileText, href: "/cv.pdf" },
+                { name: "Email", icon: Mail, href: `mailto:${personalInfo.email}` },
+              ].map((b) => (
+                <a key={b.name} href={b.href} target="_blank" rel="noreferrer"
+                   className="flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-white/30
+                              text-white font-medium hover:bg-white hover:text-black transition-colors">
+                  <b.icon size={14} />
+                  {b.name}
                 </a>
-              );
-            })}
-            <a href="/cv.pdf" target="_blank" rel="noreferrer"
-               className="group/soc flex items-center gap-1.5 text-neutral-500 hover:text-white transition-colors">
-              <FileText size={14} className="opacity-60 group-hover/soc:opacity-100 transition-opacity" />
-              CV
-            </a>
+              ))}
+            </div>
+            <div className="flex flex-wrap gap-x-5 gap-y-2 mt-4">
+              {socialLinks.map((s) => {
+                const Icon = s.icon;
+                return (
+                  <a key={s.name} href={s.link} target="_blank" rel="noreferrer"
+                     className="group/soc flex items-center gap-1.5 text-neutral-400 hover:text-white transition-colors">
+                    <Icon size={14} className="opacity-60 group-hover/soc:opacity-100 transition-opacity" />
+                    {s.name}
+                  </a>
+                );
+              })}
+            </div>
           </div>
         </header>
 
@@ -253,11 +279,11 @@ export default function ListHome() {
             </div>
           </section>
 
-          <section id="experience" className="scroll-mt-24 mt-20">
-            <MobileHead>Experience</MobileHead>
+          <section id="education" className="scroll-mt-24 mt-20">
+            <MobileHead>Education</MobileHead>
             <div className="dim-list">
-              {experiences.map((e) => (
-                <Row key={e.company} period={e.period} title={e.company} sub={e.title} desc={e.desc} />
+              {education.map((e) => (
+                <Row key={e.school} period={e.period} title={e.school} sub={e.degree} desc={e.desc} />
               ))}
             </div>
           </section>
@@ -272,6 +298,15 @@ export default function ListHome() {
             </div>
           </section>
 
+          <section id="experience" className="scroll-mt-24 mt-20">
+            <MobileHead>Experience</MobileHead>
+            <div className="dim-list">
+              {experiences.map((e) => (
+                <Row key={e.company} period={e.period} title={e.company} sub={e.title} desc={e.desc} />
+              ))}
+            </div>
+          </section>
+
           <section id="research" className="scroll-mt-24 mt-20">
             <MobileHead>Research</MobileHead>
             <div className="dim-list">
@@ -282,11 +317,11 @@ export default function ListHome() {
             </div>
           </section>
 
-          <section id="education" className="scroll-mt-24 mt-20">
-            <MobileHead>Education</MobileHead>
+          <section id="interests" className="scroll-mt-24 mt-20">
+            <MobileHead>Interests</MobileHead>
             <div className="dim-list">
-              {education.map((e) => (
-                <Row key={e.school} period={e.period} title={e.school} sub={e.degree} desc={e.desc} />
+              {interests.map((i) => (
+                <Row key={i.title} title={i.title} desc={i.desc} />
               ))}
             </div>
           </section>

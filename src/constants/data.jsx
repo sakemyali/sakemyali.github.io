@@ -1,4 +1,4 @@
-import { Github, Linkedin, Mail, Bot } from "lucide-react";
+import { Github, Linkedin, Bot } from "lucide-react";
 
 export const personalInfo = {
   name: "Moulay Ali Sakurai El idrissi",
@@ -118,12 +118,6 @@ export const socialLinks = [
     link: "https://huggingface.co/sakemyali",
     color: "hover:text-white",
   },
-  {
-    name: "Email",
-    icon: Mail,
-    link: "mailto:myali.sakurai.elidrissi@gmail.com",
-    color: "hover:text-white",
-  },
 ];
 
 export const experiences = [
@@ -188,4 +182,10 @@ export const languages = [
   { name: "French", level: "Advanced" },
   { name: "Arabic", level: "Advanced" },
   { name: "Japanese", level: "Advanced" },
+];
+
+// TODO(ali): fill in — seeded from what the site used to list under "currently learning"
+export const interests = [
+  { title: "Systems programming", desc: "C, memory safety, and what the compiler actually emits." },
+  { title: "Post-quantum cryptography", desc: "Crypto-agile designs that survive the migration." },
 ];
