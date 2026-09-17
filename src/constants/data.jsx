@@ -1,14 +1,13 @@
 import { Github, Linkedin, Bot } from "lucide-react";
 
 export const personalInfo = {
-  name: "Moulay Ali Sakurai El idrissi",
+  name: "Moulay Ali\nSakurai\nEl idrissi",
   role: "Backend Engineer intern",
-  bio: "Backend engineer and Cybersecurity graduate based in Tokyo, Japan. I build secure, scalable systems with C, Python, and cloud technologies.",
+  bio: "I like systems, numbers and people.",
   email: "myali.sakurai.elidrissi@gmail.com",
   location: "Japan",
   roles: [
-    "Cybersecurity Graduate",
-    "42 Tokyo Student",
+    "System Engineering student"
   ],
 };
 
