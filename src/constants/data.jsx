@@ -1,15 +1,11 @@
 import { Github, Linkedin, Bot } from "lucide-react";
 
 export const personalInfo = {
-  name: "Moulay Ali Sakurai El idrissi",
-  role: "Backend Engineer intern",
-  bio: "Backend engineer and Cybersecurity graduate based in Tokyo, Japan. I build secure, scalable systems with C, Python, and cloud technologies.",
+  name: "Moulay Ali\nSakurai\nEl idrissi",
+  role: "System Engineering student",
+  bio: "I like systems, numbers and people.",
   email: "myali.sakurai.elidrissi@gmail.com",
   location: "Japan",
-  roles: [
-    "Cybersecurity Graduate",
-    "42 Tokyo Student",
-  ],
 };
 
 export const projects = [
@@ -122,34 +118,34 @@ export const socialLinks = [
 
 export const experiences = [
   {
-    title: "AI/ML Engineer Intern",
+    title: "AI/ML Engineer",
     company: "Dassault Systèmes",
     period: "Aug 2026 — Present",
-    desc: "AI/ML engineering internship in Tokyo.",
+    desc: ["Serving LLMs and 3D physics simulation models on in-house hardware", "Turning plain-language requests into inputs those models can run", "Connecting LLM agents to internal tools and data through MCP"],
   },
   {
-    title: "Incoming Summer Intern",
+    title: "Summer Intern",
     company: "Morgan Stanley",
-    period: "Aug 2026 — Present",
-    desc: "Institutional Equity Division — Sales & Trading, Tokyo.",
+    period: "Aug 2026",
+    desc: ["Institutional Equity Division — Sales & Trading"],
   },
   {
-    title: "Backend/ML Engineer (Freelance)",
-    company: "Stealth AI Startup",
+    title: "Backend & ML Engineer",
+    company: "Stealth Startup",
     period: "May 2026 — Present",
-    desc: "Built data-acquisition pipelines — web scrapers across Japanese rental platforms with regional filtering, exposed via a RESTful API — and a property-price prediction model trained on multi-source Japanese market data.",
+    desc: ["Pulling rental listings scattered across Japanese platforms into one API", "Predicting property prices from that data"],
   },
   {
-    title: "Backend Engineer Intern",
+    title: "Backend Engineer",
     company: "DIGITAL GRID Corporation",
     period: "Feb 2026 — Apr 2026",
-    desc: "Built a customer-facing RAG system with LangGraph, combining hybrid vector search with knowledge-graph traversal. Lifted answer accuracy ~20% via automated evaluation and cut database query overhead ~70%. Delivered as a Dockerized service.",
+    desc: ["Made electricity trading data searchable in plain language", "Auth, access control and monitoring across the backend"],
   },
   {
-    title: "Full Stack Engineer Intern",
+    title: "Full Stack Engineer",
     company: "TOKYO-ICT (JICA affiliate)",
     period: "Jul 2023 — Sep 2023",
-    desc: "Developed a multilingual speech conversion system using Azure Cognitive Services. Built scalable backend services with Django, Node.js, and PostgreSQL, reducing runtime by 30%.",
+    desc: ["Built a system that converts speech across languages", "Wrote the backend behind it"],
   },
 ];
 
@@ -175,13 +171,6 @@ export const education = [
     period: "2022 — 2025",
     desc: "CS Project Prize. Focus on cryptography, penetration testing, and secure systems.",
   },
-];
-
-export const languages = [
-  { name: "English", level: "Full Professional" },
-  { name: "French", level: "Advanced" },
-  { name: "Arabic", level: "Advanced" },
-  { name: "Japanese", level: "Advanced" },
 ];
 
 // TODO(ali): fill in — seeded from what the site used to list under "currently learning"

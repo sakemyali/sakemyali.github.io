@@ -9,7 +9,6 @@ import {
   projects,
   socialLinks,
   education,
-  languages,
   publications,
   interests,
 } from "./constants/data.jsx";
@@ -74,7 +73,13 @@ const Row = ({ period, title, href, to, sub, desc }) => {
           )}
         </span>
         {sub && <div className="text-[13px] text-neutral-400 mt-0.5">{sub}</div>}
-        {desc && <p className="text-[13px] text-neutral-400 leading-relaxed mt-1.5">{desc}</p>}
+        {Array.isArray(desc) ? (
+          <ul className="text-[13px] text-neutral-400 leading-relaxed mt-1.5">
+            {desc.map((d, i) => (
+              <li key={i} className="flex gap-2"><span className="text-neutral-600" aria-hidden="true">—</span>{d}</li>
+            ))}
+          </ul>
+        ) : desc && <p className="text-[13px] text-neutral-400 leading-relaxed mt-1.5">{desc}</p>}
       </div>
     </div>
   );
@@ -186,13 +191,10 @@ export default function ListHome() {
         {/* ── left column: sticky identity ── */}
         <header className="lg:sticky lg:top-0 lg:h-screen lg:w-[42%] lg:flex lg:flex-col lg:justify-between py-16 lg:py-24">
           <div>
-            <h1 className="text-4xl sm:text-5xl font-bold tracking-tight leading-[1.05]">
+            <h1 className="text-4xl sm:text-5xl font-bold tracking-tight leading-[1.05] whitespace-pre-line">
               {personalInfo.name}
             </h1>
-            <p className="text-lg text-neutral-300 mt-4">{personalInfo.role}</p>
-            <p className="text-[14px] text-neutral-500 leading-relaxed mt-4 max-w-xs">
-              I build secure, scalable systems in C, Python, and the cloud.
-            </p>
+            <p className="text-[15px] text-neutral-500 mt-3">{personalInfo.role}</p>
 
             {/* scroll-spy nav with growing indicator lines */}
             <nav className="hidden lg:block mt-16">
@@ -257,26 +259,7 @@ export default function ListHome() {
             <div className="-mb-1.5">
               <DancingSkeletons />
             </div>
-            <div className="text-[14px] text-neutral-300 leading-relaxed space-y-4">
-              <p>
-                I'm a backend &amp; ML engineer in Tokyo with a cybersecurity
-                foundation — 1st Class Honours in Cyber Security, ranked 1st in
-                42 Tokyo's entrance Piscine. I'm as comfortable in C and systems
-                programming as in the cloud layer above it.
-              </p>
-              <p>
-                Right now I'm doing AI/ML engineering at Dassault Systèmes,
-                joining Morgan Stanley's Institutional Equity Division, and
-                building retrieval systems for a stealth AI startup — most
-                recently a production RAG service that lifted answer accuracy
-                ~20% and cut query overhead ~70%.
-              </p>
-              <p className="text-neutral-500">
-                Security shapes how I build: threat-first design, measured
-                before optimized. I work in four languages —{" "}
-                {languages.map((l) => l.name).join(", ")}.
-              </p>
-            </div>
+            <p className="text-[14px] text-neutral-300 leading-relaxed">{personalInfo.bio}</p>
           </section>
 
           <section id="education" className="scroll-mt-24 mt-20">
