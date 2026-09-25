@@ -127,7 +127,7 @@ export const experiences = [
     title: "Summer Intern",
     company: "Morgan Stanley",
     period: "Aug 2026",
-    desc: ["Institutional Equity Division - Sales & Trading"],
+    desc: ["Institutional Equity Division — Sales & Trading"],
   },
   {
     title: "Backend & ML Engineer",
@@ -171,13 +171,6 @@ export const education = [
     period: "2022 — 2025",
     desc: "CS Project Prize. Focus on cryptography, penetration testing, and secure systems.",
   },
-];
-
-export const languages = [
-  { name: "English", level: "Full Professional" },
-  { name: "French", level: "Advanced" },
-  { name: "Arabic", level: "Advanced" },
-  { name: "Japanese", level: "Advanced" },
 ];
 
 // TODO(ali): fill in — seeded from what the site used to list under "currently learning"

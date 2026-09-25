@@ -75,8 +75,8 @@ const Row = ({ period, title, href, to, sub, desc }) => {
         {sub && <div className="text-[13px] text-neutral-400 mt-0.5">{sub}</div>}
         {Array.isArray(desc) ? (
           <ul className="text-[13px] text-neutral-400 leading-relaxed mt-1.5">
-            {desc.map((d) => (
-              <li key={d} className="flex gap-2"><span className="text-neutral-600" aria-hidden="true">—</span>{d}</li>
+            {desc.map((d, i) => (
+              <li key={i} className="flex gap-2"><span className="text-neutral-600" aria-hidden="true">—</span>{d}</li>
             ))}
           </ul>
         ) : desc && <p className="text-[13px] text-neutral-400 leading-relaxed mt-1.5">{desc}</p>}
