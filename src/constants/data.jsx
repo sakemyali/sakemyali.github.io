@@ -160,15 +160,20 @@ export const publications = [
 
 export const education = [
   {
+    school: "Georgia Institute of Technology",
+    degree: "M.S. Computer Science — Computing Systems",
+    period: "Oct 2026 — Jun 2028",
+  },
+  {
     school: "42 Tokyo",
     degree: "Software Engineering Program",
-    period: "2024 — Present",
+    period: "Sep 2025 — Present",
     desc: "Ranked 1st place in the Piscine entrance exam. Peer-to-peer learning in C, algorithms, and systems programming.",
   },
   {
     school: "Nottingham Trent University",
     degree: "BSc Cyber Security — 1st Class Honours",
-    period: "2022 — 2025",
+    period: "Sep 2022 — May 2025",
     desc: "CS Project Prize. Focus on cryptography, penetration testing, and secure systems.",
   },
 ];
