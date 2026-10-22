@@ -105,7 +105,7 @@ export const socialLinks = [
   {
     name: "LinkedIn",
     icon: Linkedin,
-    link: "https://www.linkedin.com/in/emyali/",
+    link: "https://www.linkedin.com/in/sakemyali/",
     color: "hover:text-white",
   },
   {
